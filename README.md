@@ -11,8 +11,9 @@ Everything runs in your browser. Files are never uploaded anywhere.
 
 ## Use it
 
-Open `index.html` in Chrome or Firefox (double click is enough), or use the hosted version if
-GitHub Pages is enabled for this repository.
+Live version: https://novasyntax811.github.io/tracker-lens/
+
+Or download `index.html` and open it in Chrome or Firefox (double click is enough).
 
 1. Open Chrome DevTools with F12 and go to the **Network** tab. Tick **Preserve log**.
 2. Clear the log, then visit the pages you want to study.
