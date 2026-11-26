@@ -226,7 +226,8 @@ details.page .stat b { display: block; font-size: 20px; color: var(--text); }
 .explain-text { max-width: 72ch; min-width: 0; }
 .explain-text h3 { font-size: 21px; margin: var(--space-5) 0 12px; scroll-margin-top: var(--space-3); }
 .explain-text > h3:first-child { margin-top: 0; }
-.explain-text h4 { font-size: 16px; margin: 0 0 8px; }
+.explain-text h4 { font-size: 17px; margin: var(--space-3) 0 8px; }
+.browsers h4 { margin-top: 0; }
 .explain-text p + p, .explain-text ul + p, .explain-text .table-wrap + p, .explain-text p + .table-wrap { margin-top: 12px; }
 .explain-text ul, .explain-text ol { margin: 12px 0; padding-left: 22px; }
 .explain-text li { margin-bottom: 8px; }
@@ -388,6 +389,7 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
           <li><a href="#x-record">Recording a HAR file</a></li>
           <li><a href="#x-read">Reading the results</a></li>
           <li><a href="#x-compare">Designing a comparison</a></li>
+          <li><a href="#x-noise">Testing noise</a></li>
           <li><a href="#x-limits">What it cannot tell you</a></li>
           <li><a href="#x-data">Your data</a></li>
           <li><a href="#x-terms">Terms used here</a></li>
@@ -540,6 +542,56 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
           <li>Record each session at least three times and load all files. If the differences between your repeats are as large as the difference between your two setups, the change probably did nothing.</li>
           <li>Name each file after its setup, for example <code>accept-1</code> and <code>reject-1</code>, and write down when and how you recorded it.</li>
         </ul>
+
+        <h3 id="x-noise">Testing noise</h3>
+        <p>Trackers build a picture of you from the sites you visit. If you mostly read about cars, you become "interested in cars". <b>Noise</b> is the idea of hiding that picture by also visiting unrelated sites, such as cooking, travel or gardening. The question is whether the companies watching you notice the difference, or simply carry on. This tactic is known as obfuscation.</p>
+        <p>Tracker Lens has no noise setting. You create the noise yourself while recording, and Tracker Lens compares the result.</p>
+
+        <h4>Recording a noise comparison</h4>
+        <ol class="steps">
+          <li><b>Pick your topic sites.</b> For example five car sites. These are the sites you compare.</li>
+          <li><b>Pick your noise sites</b> from other topics, for example two cooking, two travel and two sports sites.</li>
+          <li><b>Record without noise.</b> In a fresh private window, visit only the topic sites. Save the file as <code>no-noise.har</code>.</li>
+          <li><b>Record with noise.</b> In a new fresh private window, visit the same topic sites in the same order, with noise sites in between. Save it as <code>noise.har</code>.</li>
+          <li><b>Load both files</b>, the file without noise first.</li>
+        </ol>
+        <p>Tracker Lens compares only websites found in both files. The noise sites appear in one file only, so they are left out of the comparison automatically. What you see is how the topic sites behaved with and without noise around them.</p>
+
+        <h4>Setting the amount of noise</h4>
+        <p>The amount of noise is the share of noise visits among all visits. You set it by how many noise sites you visit per topic site.</p>
+        <div class="table-wrap">
+          <table class="ref">
+            <thead><tr><th scope="col">Amount</th><th scope="col">Share of noise</th><th scope="col">Example with 6 car sites</th></tr></thead>
+            <tbody>
+              <tr><td>None</td><td class="num">0%</td><td>6 car sites</td></tr>
+              <tr><td>Light</td><td class="num">about 30%</td><td>6 car sites and 3 noise sites: one noise site after every second car site</td></tr>
+              <tr><td>Heavy</td><td class="num">about 70%</td><td>6 car sites and 14 noise sites: two or three noise sites after every car site</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>There are two ways to add noise, and they answer different questions:</p>
+        <dl class="defs">
+          <dt>Adding noise on top</dt>
+          <dd>You keep all topic visits and add noise visits. The browsing session gets longer. This tests whether the same interest gets blurred when it is surrounded by other topics. The table above uses this way.</dd>
+          <dt>Replacing visits with noise</dt>
+          <dd>You keep the total number of visits and swap some topic visits for noise visits, for example 4 car sites and 2 noise sites instead of 6 car sites. This tests what happens when the real interest gets weaker. Only the car sites you kept can be compared across files.</dd>
+        </dl>
+
+        <h4>Choosing noise sites</h4>
+        <ul>
+          <li>Use sites that carry ads and trackers themselves. Sites without trackers add no noise that anyone sees.</li>
+          <li>Mix several topics. Noise from a single topic just creates a second interest.</li>
+          <li>Avoid topics that advertisers pay a lot for, such as finance, insurance or travel bookings. They can make a profile more attractive instead of blurring it.</li>
+          <li>Never log in anywhere during a recording. A login ties all visits to you directly, and noise no longer hides anything.</li>
+        </ul>
+
+        <h4>What to look for</h4>
+        <ul>
+          <li><b>Site by site:</b> did the topic sites contact more, fewer or other companies when noise was present?</li>
+          <li><b>Domains found in one file only:</b> which companies appeared only with noise? Many of them come from the noise sites themselves; check the page list to see where each one was contacted.</li>
+          <li><b>Repeats:</b> record each setup at least three times. Any effect of noise may be small, and ad activity varies a lot between visits.</li>
+        </ul>
+        <p>Tracker Lens shows <em>who</em> was contacted, not <em>what they concluded</em>. If the same companies are contacted with and without noise, they may still have built a different picture of you. Measuring that needs the ad prices or interest labels companies attach to a browser, which a HAR file usually does not contain.</p>
 
         <h3 id="x-limits">What it cannot tell you</h3>
         <ul>
