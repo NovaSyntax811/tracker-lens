@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracker Lens</title>
+<meta name="description" content="Count the third party domains each page contacts, from a HAR file. Runs entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%23c2410c' stroke-width='3.5'/%3E%3Cpath d='M21 21l7 7' stroke='%23c2410c' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+/* ------------------------------------------------------------------
+   Theme. Every color lives here so the look can be changed in one place.
+   ------------------------------------------------------------------ */
+:root {
+  --bg: #f6f3ee;
+  --surface: #ffffff;
+  --surface-2: #faf8f4;
+  --text: #1f1d1a;
+  --muted: #625d55;
+  --line: #e3ded4;
+  --accent: #c2410c;          /* main accent: buttons, focus, highlights */
+  --accent-soft: #fbe6da;
+  --accent-text: #ffffff;
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --ok: #1d6b45;
+  --focus: #1d4ed8;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(31, 29, 26, .05), 0 6px 20px rgba(31, 29, 26, .05);
+  /* One color per uploaded file, reused in cards, bars and badges. */
+  --file-0: #c2410c;
+  --file-1: #1d6fa5;
+  --file-2: #6b4fb3;
+  --file-3: #2f7d4f;
+  --file-4: #a1306b;
+  --file-5: #8a6a12;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141311;
+    --surface: #1d1c19;
+    --surface-2: #23221e;
+    --text: #efece6;
+    --muted: #a8a299;
+    --line: #34322d;
+    --accent: #fb8a4c;
+    --accent-soft: #3a2418;
+    --accent-text: #1a0d05;
+    --danger: #ff8a7a;
+    --danger-soft: #3a1c18;
+    --ok: #6fd3a0;
+    --focus: #8ab4ff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+    --file-0: #fb8a4c;
+    --file-1: #6cb6e8;
+    --file-2: #b49cf2;
+    --file-3: #74c895;
+    --file-4: #ef8bbd;
+    --file-5: #e0c060;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 1100px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -.02em; }
+h2 { font-size: 21px; letter-spacing: -.01em; margin-bottom: 14px; }
+h3 { font-size: 16px; }
+p { margin: 0; }
+a { color: var(--accent); }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+
+/* Header */
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.brand svg { flex: none; }
+.lead { font-size: 18px; color: var(--muted); max-width: 640px; }
+.privacy {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+  padding: 6px 12px; border-radius: 999px; background: var(--surface);
+  border: 1px solid var(--line); font-size: 14px; color: var(--muted);
+}
+.privacy svg { color: var(--ok); }
+header { margin-bottom: 32px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: inherit; font-weight: 600; font-size: 15px;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  border: 1px solid transparent; background: var(--accent); color: var(--accent-text);
+  transition: transform .15s ease, filter .15s ease, background .15s ease;
+}
+.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn.secondary { background: var(--surface); color: var(--text); border-color: var(--line); }
+.btn.secondary:hover { background: var(--surface-2); }
+.btn.small { padding: 6px 12px; font-size: 14px; }
+
+/* Upload area: large when empty, compact once files are loaded */
+.upload { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: stretch; }
+.dropzone {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; min-height: 300px; padding: 32px 24px;
+  border: 2px dashed var(--line); border-radius: var(--radius); background: var(--surface);
+  cursor: pointer; transition: border-color .2s ease, background .2s ease, min-height .25s ease;
+}
+.dropzone:hover { border-color: var(--accent); }
+.dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.dropzone .icon {
+  width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.dropzone strong { font-size: 19px; }
+.howto {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 24px; box-shadow: var(--shadow);
+}
+.howto ol { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: step; }
+.howto li { counter-increment: step; display: grid; grid-template-columns: 30px 1fr; gap: 10px; margin: 0 0 12px; }
+.howto li::before {
+  content: counter(step); width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+  background: var(--accent-soft); color: var(--accent);
+}
+kbd {
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 6px;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface-2);
+}
+body.has-results .upload { grid-template-columns: 1fr; }
+body.has-results .howto { display: none; }
+body.has-results .dropzone {
+  min-height: 0; flex-direction: row; justify-content: flex-start; text-align: left;
+  padding: 14px 18px; gap: 14px;
+}
+body.has-results .dropzone .icon { width: 40px; height: 40px; border-radius: 12px; }
+body.has-results .dropzone .icon svg { width: 20px; height: 20px; }
+body.has-results .dropzone strong { font-size: 16px; }
+body.has-results .dropzone .hint { display: none; }
+body.has-results .dropzone .btn { margin-left: auto; }
+
+/* Status messages */
+.status { margin-top: 14px; min-height: 0; }
+.status:empty { display: none; }
+.status .msg {
+  display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--line); margin-bottom: 8px; font-size: 15px;
+}
+.status .msg.error { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%; flex: none; margin-top: 3px;
+  border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Results */
+section.results { margin-top: 40px; }
+section.results[hidden] { display: none; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.section-head h2 { margin: 0; }
+.block { margin-top: 44px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.card {
+  position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 20px 20px; box-shadow: var(--shadow); overflow: hidden;
+}
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--c); }
+.card label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.card input {
+  width: 100%; font: inherit; font-weight: 650; font-size: 17px; color: var(--text);
+  background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 6px; margin-left: -7px;
+}
+.card input:hover { border-color: var(--line); }
+.card input:focus { border-color: var(--focus); outline: none; background: var(--surface-2); }
+.card .big { font-size: 46px; font-weight: 750; letter-spacing: -.03em; line-height: 1.05; margin-top: 14px; color: var(--c); }
+.card .unit { font-size: 14px; color: var(--muted); }
+.card .meta { display: flex; gap: 16px; margin-top: 14px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+.card .meta b { color: var(--text); font-weight: 650; }
+.card .remove {
+  position: absolute; top: 12px; right: 10px; border: 0; background: transparent; color: var(--muted);
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: grid; place-items: center;
+}
+.card .remove:hover { background: var(--surface-2); color: var(--text); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { fill: var(--text); font: 14px system-ui, sans-serif; }
+.chart .value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.chart .grid { stroke: var(--line); }
+.chart .axis { fill: var(--muted); font-size: 12px; }
+.chart rect.bar { transition: width .25s ease; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+  padding: 2px 10px 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line);
+}
+.badge::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+
+.diff { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.diff h3 { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 8px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tabs button {
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.tabs button::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+.tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; font-weight: 600; color: var(--muted); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.url { word-break: break-all; }
+tr:last-child td { border-bottom: 0; }
+
+details.page { border-bottom: 1px solid var(--line); }
+details.page:last-child { border-bottom: 0; }
+details.page summary {
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: 22px 1fr auto auto; gap: 12px;
+  align-items: center; padding: 12px 4px; border-radius: 8px;
+}
+details.page summary::-webkit-details-marker { display: none; }
+details.page summary:hover { background: var(--surface-2); }
+details.page summary .chev { transition: transform .2s ease; color: var(--muted); }
+details.page[open] summary .chev { transform: rotate(90deg); }
+details.page .title { min-width: 0; }
+details.page .title b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details.page .title span { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details.page .stat { text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); white-space: nowrap; }
+details.page .stat b { display: block; font-size: 18px; color: var(--text); }
+.domains { list-style: none; margin: 0 0 14px; padding: 4px 0 0 34px; }
+.domains li { display: grid; grid-template-columns: minmax(120px, 260px) 1fr 52px; gap: 12px; align-items: center; padding: 4px 0; font-size: 14px; }
+.domains .d { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.domains .track { display: block; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.domains .fill { display: block; height: 100%; border-radius: 999px; background: var(--c); }
+.domains .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+footer { margin-top: 60px; font-size: 14px; color: var(--muted); }
+
+@media (max-width: 760px) {
+  main { padding-top: 28px; }
+  .upload { grid-template-columns: 1fr; }
+  .dropzone { min-height: 220px; }
+  body.has-results .dropzone { flex-wrap: wrap; }
+  body.has-results .dropzone .btn { margin-left: 0; }
+  details.page summary { grid-template-columns: 18px 1fr auto; }
+  details.page summary .stat.req { display: none; }
+  .domains { padding-left: 0; }
+  .domains li { grid-template-columns: minmax(0, 1fr) 70px 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9" fill="none" stroke="var(--accent)" stroke-width="3.5"/><path d="M21 21l7 7" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <h1>Tracker Lens</h1>
+    </div>
+    <p class="lead">Upload a HAR file from your browser and see how many outside companies each page you visited talked to. Compare two browsing sessions side by side.</p>
+    <p class="privacy">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      Files are processed only in your browser. Nothing is uploaded.
+    </p>
+  </header>
+
+  <section class="upload" aria-label="Upload HAR files">
+    <div class="dropzone" id="dropzone" role="button" tabindex="0"
+         aria-describedby="drop-hint" aria-label="Choose HAR files to analyse">
+      <div class="icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+      </div>
+      <div>
+        <strong id="drop-title">Drop HAR files here</strong>
+        <p class="muted hint" id="drop-hint">One file per browsing session. Add two or more to compare them.</p>
+      </div>
+      <span class="btn" aria-hidden="true">Choose files</span>
+      <input type="file" id="file-input" accept=".har,application/json" multiple class="visually-hidden" tabindex="-1" aria-hidden="true">
+    </div>
+
+    <aside class="howto" aria-labelledby="howto-title">
+      <h2 id="howto-title" style="margin:0">How to get a HAR file</h2>
+      <ol>
+        <li><span>Open Chrome DevTools with <kbd>F12</kbd> and go to the <b>Network</b> tab. Tick <b>Preserve log</b>.</span></li>
+        <li><span>Clear the log, then visit the pages you want to study.</span></li>
+        <li><span>Right click in the request list and choose <b>Save all as HAR</b>.</span></li>
+        <li><span>Drop the file here. Repeat with a second browsing profile to compare.</span></li>
+      </ol>
+      <p class="muted" style="font-size:14px">No HAR at hand? <button type="button" class="btn secondary small" id="load-examples">Load example files</button></p>
+    </aside>
+  </section>
+
+  <div class="status" id="status" aria-live="polite"></div>
+
+  <section class="results" id="results" hidden aria-labelledby="results-title">
+    <div class="section-head">
+      <h2 id="results-title">Third party domains per page</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn secondary small" id="download-csv">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+          Download CSV
+        </button>
+        <button type="button" class="btn secondary small" id="clear-all">Clear all</button>
+      </div>
+    </div>
+    <p class="muted" style="margin:-6px 0 18px;max-width:720px">A third party is any website domain other than the one you visited, for example <code>doubleclick.net</code> on a news site. The big number is the average count per page.</p>
+    <div class="cards" id="cards"></div>
+
+    <div class="block" id="compare-block" hidden>
+      <h2>Comparison</h2>
+      <div class="panel chart" id="chart"></div>
+      <div class="diff" id="diff" style="margin-top:16px"></div>
+    </div>
+
+    <div class="block">
+      <h2>Pages</h2>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Choose a file"></div>
+      <div class="panel" id="pages" role="tabpanel"></div>
+    </div>
+  </section>
+
+  <footer>
+    Tracker Lens counts registrable domains with a simple built in rule, so a few multi part domain endings may be grouped imperfectly. It measures what your browser contacted, not what those companies did with the data.
+  </footer>
+</main>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------
+   1. Settings
+   ------------------------------------------------------------------ */
+
+// Domain endings that have two parts. "news.bbc.co.uk" belongs to "bbc.co.uk",
+// not to "co.uk". Add more here if you study sites from other countries.
+const TWO_PART_SUFFIXES = new Set([
+  "co.uk", "org.uk", "gov.uk", "ac.uk", "me.uk", "ltd.uk", "plc.uk",
+  "com.au", "net.au", "org.au", "edu.au", "gov.au",
+  "co.jp", "ne.jp", "or.jp",
+  "com.br", "net.br", "org.br",
+  "co.nz", "org.nz", "co.za", "co.in", "co.kr", "com.cn", "com.tr", "com.mx",
+  "com.ar", "com.sg", "com.hk", "com.tw", "co.at", "or.at", "co.il",
+]);
+const MAX_FILE_COLORS = 6;           // matches --file-0 .. --file-5 in the CSS
+
+/* ------------------------------------------------------------------
+   2. The metric: pure functions, easy to test and to extend
+   ------------------------------------------------------------------ */
+
+/** Hostname to registrable domain: "ads.g.doubleclick.net" becomes "doubleclick.net". */
+function registrableDomain(host) {
+  host = host.toLowerCase().replace(/\.$/, "");
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":") || !host.includes(".")) {
+    return host;                     // IP addresses and "localhost" stay as they are
+  }
+  const parts = host.split(".");
+  const lastTwo = parts.slice(-2).join(".");
+  if (parts.length > 2 && TWO_PART_SUFFIXES.has(lastTwo)) return parts.slice(-3).join(".");
+  return lastTwo;
+}
+
+/** URL string to registrable domain, or null for data:, blob:, chrome-extension: and so on. */
+function domainOf(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return registrableDomain(u.hostname);
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Turn a parsed HAR object into a list of pages with their third party domains.
+ * Returns [{ id, title, url, domain, thirdParties: Map(domain -> request count), requests }]
+ */
+function analyseHar(har) {
+  if (!har || typeof har !== "object" || !har.log || !Array.isArray(har.log.entries)) {
+    throw new Error("This file is valid JSON but not a HAR file (log.entries is missing).");
+  }
+  const entries = har.log.entries;
+  const pagesMeta = Array.isArray(har.log.pages) ? har.log.pages : [];
+
+  // Group entries by the page they belong to.
+  const groups = new Map();
+  for (const p of pagesMeta) groups.set(p.id, { meta: p, entries: [] });
+  const SINGLE = "__single_page__";
+  for (const e of entries) {
+    let key = e.pageref && groups.has(e.pageref) ? e.pageref : null;
+    if (!key) {
+      // No usable pageref: put everything into one page.
+      key = SINGLE;
+      if (!groups.has(SINGLE)) groups.set(SINGLE, { meta: null, entries: [] });
+    }
+    groups.get(key).entries.push(e);
+  }
+
+  const pages = [];
+  for (const [id, g] of groups) {
+    if (!g.entries.length) continue;
+    // The page URL is the main document request, or else the first request.
+    const doc = g.entries.find(e => e._resourceType === "document") ||
+                g.entries.find(e => /text\/html/.test((e.response && e.response.content && e.response.content.mimeType) || "")) ||
+                g.entries[0];
+    const metaTitle = g.meta && g.meta.title ? String(g.meta.title) : "";
+    const url = /^https?:\/\//.test(metaTitle) ? metaTitle : (doc.request && doc.request.url) || "";
+    const pageDomain = domainOf(url);
+    if (!pageDomain) continue;
+
+    const thirdParties = new Map();
+    let requests = 0;
+    for (const e of g.entries) {
+      const d = domainOf((e.request && e.request.url) || "");
+      if (!d || d === pageDomain) continue;
+      thirdParties.set(d, (thirdParties.get(d) || 0) + 1);
+      requests++;
+    }
+    pages.push({ id, title: metaTitle && metaTitle !== url ? metaTitle : "", url, domain: pageDomain, thirdParties, requests });
+  }
+  if (!pages.length) throw new Error("No web pages were found in this HAR file.");
+  return pages;
+}
+
+function mean(xs) { return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; }
+
+/* ------------------------------------------------------------------
+   3. Reading files without freezing the page
+   ------------------------------------------------------------------ */
+
+// JSON.parse of a 50 MB file can block the page for a few seconds. We try to parse in a
+// Web Worker first and fall back to the main thread if workers are not allowed (some
+// browsers block them for files opened from disk).
+const WORKER_SRC = "self.onmessage = (e) => { try { self.postMessage({ ok: true, data: JSON.parse(e.data) }); } catch (err) { self.postMessage({ ok: false, error: String(err && err.message || err) }); } };";
+
+function parseJson(text) {
+  return new Promise((resolve, reject) => {
+    let worker;
+    try {
+      worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: "text/javascript" })));
+    } catch (e) {
+      worker = null;
+    }
+    const fallback = () => {
+      setTimeout(() => { try { resolve(JSON.parse(text)); } catch (err) { reject(err); } }, 30);
+    };
+    if (!worker) return fallback();
+    worker.onmessage = (e) => { worker.terminate(); e.data.ok ? resolve(e.data.data) : reject(new Error(e.data.error)); };
+    worker.onerror = (e) => { e.preventDefault(); worker.terminate(); fallback(); };
+    worker.postMessage(text);
+  });
+}
+
+function readText(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error || new Error("Could not read the file."));
+    r.readAsText(file);
+  });
+}
+
+/* ------------------------------------------------------------------
+   4. App state and rendering
+   ------------------------------------------------------------------ */
+
+const state = { files: [], active: 0, nextColor: 0 };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (x, d = 1) => Number.isInteger(x) ? String(x) : x.toFixed(d);
+const color = (f) => `var(--file-${f.color})`;
+
+function stats(f) {
+  const counts = f.pages.map(p => p.thirdParties.size);
+  const all = new Set();
+  f.pages.forEach(p => p.thirdParties.forEach((_, d) => all.add(d)));
+  return { mean: mean(counts), max: Math.max(...counts), pages: f.pages.length, unique: all };
+}
+
+function status(html, kind = "info", key) {
+  const box = $("status");
+  if (key) { const old = box.querySelector(`[data-key="${key}"]`); if (old) old.remove(); }
+  if (!html) return;
+  const div = document.createElement("div");
+  div.className = "msg" + (kind === "error" ? " error" : "");
+  if (key) div.dataset.key = key;
+  div.innerHTML = (kind === "busy" ? '<span class="spinner" aria-hidden="true"></span>' : "") + `<span>${html}</span>`;
+  box.appendChild(div);
+  if (kind === "done") setTimeout(() => div.remove(), 4000);
+}
+
+function render() {
+  document.body.classList.toggle("has-results", state.files.length > 0);
+  $("results").hidden = state.files.length === 0;
+  $("drop-title").textContent = state.files.length ? "Add more HAR files" : "Drop HAR files here";
+  if (!state.files.length) return;
+  if (state.active >= state.files.length) state.active = 0;
+  renderCards();
+  renderComparison();
+  renderTabs();
+  renderPages();
+}
+
+function renderCards() {
+  $("cards").innerHTML = state.files.map((f, i) => {
+    const s = stats(f);
+    return `<article class="card" style="--c:${color(f)}" aria-label="${esc(f.label)}">
+      <button type="button" class="remove" data-remove="${i}" aria-label="Remove ${esc(f.label)}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <label for="label-${i}">Label</label>
+      <input id="label-${i}" data-label="${i}" value="${esc(f.label)}" autocomplete="off" spellcheck="false">
+      <div class="big num">${fmt(s.mean)}</div>
+      <div class="unit">third party domains per page, on average</div>
+      <div class="meta"><span><b class="num">${s.pages}</b> pages</span><span><b class="num">${s.unique.size}</b> distinct domains</span><span>max <b class="num">${s.max}</b></span></div>
+    </article>`;
+  }).join("");
+}
+
+function renderComparison() {
+  const block = $("compare-block");
+  block.hidden = state.files.length < 2;
+  if (block.hidden) return;
+
+  // Horizontal bar chart in plain SVG.
+  const files = state.files.map(f => ({ f, s: stats(f) }));
+  const maxV = Math.max(1, ...files.map(x => x.s.mean));
+  // The chart is drawn at the panel's real width so text stays readable on phones.
+  const W = Math.max(300, Math.round($("chart").clientWidth - 44) || 760);
+  const labelW = Math.min(170, Math.round(W * 0.3)), valueW = 56, rowH = 46, top = 8;
+  const H = top + rowH * files.length + 26;
+  const barW = W - labelW - valueW;
+  const ticks = niceTicks(maxV);
+  const scale = barW / ticks[ticks.length - 1];
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="chart-title chart-desc">
+    <title id="chart-title">Average third party domains per page</title>
+    <desc id="chart-desc">${files.map(x => `${esc(x.f.label)}: ${fmt(x.s.mean)}`).join(", ")}</desc>`;
+  for (const t of ticks) {
+    const x = labelW + t * scale;
+    svg += `<line class="grid" x1="${x}" x2="${x}" y1="${top - 4}" y2="${H - 22}"/>`;
+    svg += `<text class="axis" x="${x}" y="${H - 6}" text-anchor="middle">${t}</text>`;
+  }
+  files.forEach((x, i) => {
+    const y = top + i * rowH;
+    const w = Math.max(2, x.s.mean * scale);
+    const maxChars = Math.max(6, Math.floor(labelW / 8.5));
+    const name = x.f.label.length > maxChars ? x.f.label.slice(0, maxChars - 1) + "…" : x.f.label;
+    svg += `<text x="${labelW - 12}" y="${y + rowH / 2 + 5}" text-anchor="end">${esc(name)}</text>`;
+    svg += `<rect class="bar" x="${labelW}" y="${y + 9}" width="${w}" height="${rowH - 18}" rx="7" fill="${color(x.f)}"/>`;
+    svg += `<text class="value" x="${labelW + w + 8}" y="${y + rowH / 2 + 5}">${fmt(x.s.mean)}</text>`;
+  });
+  $("chart").innerHTML = `<h3 style="margin-bottom:12px">Average third party domains per page</h3>` + svg + "</svg>";
+
+  // Domains seen in only one file.
+  $("diff").innerHTML = files.map((x, i) => {
+    const others = new Set();
+    files.forEach((y, j) => { if (j !== i) y.s.unique.forEach(d => others.add(d)); });
+    const only = [...x.s.unique].filter(d => !others.has(d)).sort();
+    const chips = only.length ? only.slice(0, 60).map(d => `<span class="chip">${esc(d)}</span>`).join("") +
+      (only.length > 60 ? `<span class="chip">+${only.length - 60} more</span>` : "")
+      : `<span class="muted">None. Every domain here also appears in another file.</span>`;
+    return `<div class="panel"><h3><span class="badge" style="--c:${color(x.f)}">${esc(x.f.label)}</span> only: <span class="num">${only.length}</span> domains</h3><div class="chips">${chips}</div></div>`;
+  }).join("");
+}
+
+function niceTicks(max) {
+  const raw = max / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || raw;
+  const ticks = [];
+  for (let t = 0; t <= max + step * 0.999; t += step) ticks.push(+t.toFixed(6));
+  return ticks;
+}
+
+function renderTabs() {
+  $("tabs").innerHTML = state.files.map((f, i) =>
+    `<button type="button" role="tab" id="tab-${i}" aria-selected="${i === state.active}" tabindex="${i === state.active ? 0 : -1}"
+      data-tab="${i}" style="--c:${color(f)}">${esc(f.label)}</button>`).join("");
+  $("pages").setAttribute("aria-labelledby", `tab-${state.active}`);
+}
+
+function renderPages() {
+  const f = state.files[state.active];
+  const pages = [...f.pages].sort((a, b) => b.thirdParties.size - a.thirdParties.size);
+  $("pages").innerHTML = pages.map(p => {
+    const list = [...p.thirdParties.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const top = list.length ? list[0][1] : 1;
+    const rows = list.map(([d, n]) => `<li><span class="d" title="${esc(d)}">${esc(d)}</span>
+      <span class="track" aria-hidden="true"><span class="fill" style="width:${(n / top * 100).toFixed(1)}%"></span></span>
+      <span class="n">${n}</span></li>`).join("");
+    return `<details class="page" style="--c:${color(f)}">
+      <summary>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        <span class="title"><b>${esc(p.domain)}</b><span>${esc(p.url)}</span></span>
+        <span class="stat"><b>${p.thirdParties.size}</b>domains</span>
+        <span class="stat req"><b>${p.requests}</b>requests</span>
+      </summary>
+      ${list.length ? `<ul class="domains" aria-label="Third party domains on ${esc(p.domain)}">${rows}</ul>` : `<p class="muted" style="padding:0 0 14px 34px">No third party requests on this page.</p>`}
+    </details>`;
+  }).join("");
+}
+
+/* ------------------------------------------------------------------
+   5. Loading files
+   ------------------------------------------------------------------ */
+
+async function addFiles(fileList) {
+  const files = [...fileList];
+  for (const file of files) {
+    const key = "f" + Math.random().toString(36).slice(2);
+    const mb = (file.size / 1048576).toFixed(1);
+    status(`Reading <b>${esc(file.name)}</b> (${mb} MB)…`, "busy", key);
+    try {
+      const text = await readText(file);
+      status(`Analysing <b>${esc(file.name)}</b>…`, "busy", key);
+      let har;
+      try { har = await parseJson(text); }
+      catch (e) { throw new Error("This file is not valid JSON, so it cannot be a HAR file."); }
+      addParsed(file.name, har);
+      status(`Loaded <b>${esc(file.name)}</b>.`, "done", key);
+    } catch (err) {
+      status(`<b>${esc(file.name)}</b>: ${esc(err.message || err)}`, "error", key);
+    }
+  }
+}
+
+function addParsed(name, har) {
+  const pages = analyseHar(har);
+  state.files.push({
+    label: name.replace(/\.har$/i, ""),
+    pages,
+    color: state.nextColor++ % MAX_FILE_COLORS,
+  });
+  state.active = state.files.length - 1;
+  render();
+}
+
+function downloadCsv() {
+  const q = (v) => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+  const lines = ["file_label,page_url,third_party_domains,third_party_requests"];
+  for (const f of state.files) for (const p of f.pages) lines.push([f.label, p.url, p.thirdParties.size, p.requests].map(q).join(","));
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "tracker-lens.csv";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+/* Small built in examples so the tool can be tried without a HAR file. */
+function exampleHar(sites) {
+  const pages = [], entries = [];
+  sites.forEach(([page, trackers], i) => {
+    const id = "page_" + (i + 1);
+    pages.push({ id, title: page, startedDateTime: new Date().toISOString() });
+    entries.push({ pageref: id, _resourceType: "document", request: { url: page }, response: { content: { mimeType: "text/html" } } });
+    for (const [host, n] of trackers) for (let k = 0; k < n; k++) entries.push({ pageref: id, request: { url: `https://${host}/r?${k}` }, response: { content: {} } });
+  });
+  return { log: { version: "1.2", pages, entries } };
+}
+function loadExamples() {
+  const ads = [["securepubads.g.doubleclick.net", 14], ["www.googletagmanager.com", 3], ["ib.adnxs.com", 6], ["fastlane.rubiconproject.com", 5], ["hbopenbid.pubmatic.com", 4], ["bidder.criteo.com", 3]];
+  addParsed("baseline", exampleHar([
+    ["https://www.example-news.com/", ads.concat([["cdn.example-news.com", 9]])],
+    ["https://weather.example.org/today", ads.slice(0, 3)],
+    ["https://www.example-shop.co.uk/", [["www.google-analytics.com", 2], ["connect.facebook.net", 2]]],
+  ]));
+  addParsed("with noise", exampleHar([
+    ["https://www.example-news.com/", ads.concat([["cdn.example-news.com", 9], ["id5-sync.com", 2], ["match.adsrvr.org", 3], ["sync.outbrain.com", 2]])],
+    ["https://weather.example.org/today", ads.concat([["ads.yieldmo.com", 2]])],
+    ["https://www.example-shop.co.uk/", [["www.google-analytics.com", 2], ["connect.facebook.net", 2], ["static.hotjar.com", 1]]],
+  ]));
+}
+
+/* ------------------------------------------------------------------
+   6. Wiring up the interface
+   ------------------------------------------------------------------ */
+
+const dz = $("dropzone"), input = $("file-input");
+dz.addEventListener("click", () => input.click());
+dz.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
+input.addEventListener("change", () => { addFiles(input.files); input.value = ""; });
+["dragenter", "dragover"].forEach(t => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.add("dragover"); }));
+["dragleave", "drop"].forEach(t => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.remove("dragover"); }));
+dz.addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+// Dropping a file anywhere else should not make the browser navigate away.
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+$("load-examples").addEventListener("click", loadExamples);
+$("download-csv").addEventListener("click", downloadCsv);
+$("clear-all").addEventListener("click", () => { state.files = []; state.nextColor = 0; render(); status("All files removed.", "done"); dz.focus(); });
+
+$("cards").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-remove]");
+  if (!b) return;
+  const [gone] = state.files.splice(+b.dataset.remove, 1);
+  render();
+  status(`Removed ${esc(gone.label)}.`, "done");
+  if (!state.files.length) dz.focus();
+});
+$("cards").addEventListener("input", (e) => {
+  const i = e.target.dataset.label;
+  if (i === undefined) return;
+  state.files[+i].label = e.target.value.trim() || "untitled";
+  renderComparison(); renderTabs();   // cards keep focus because they are not re-rendered
+});
+$("tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tab]");
+  if (!b) return;
+  state.active = +b.dataset.tab; renderTabs(); renderPages();
+});
+$("tabs").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const n = state.files.length;
+  state.active = (state.active + (e.key === "ArrowRight" ? 1 : n - 1)) % n;
+  renderTabs(); renderPages(); $(`tab-${state.active}`).focus();
+});
+
+// Redraw the chart when the window size changes.
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (state.files.length > 1) renderComparison(); }, 150);
+});
+
+// Exposed for tests in the browser console.
+window.TrackerLens = { registrableDomain, domainOf, analyseHar };
+</script>
+</body>
+</html>
