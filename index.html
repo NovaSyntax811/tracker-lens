@@ -215,16 +215,35 @@ details.page .stat b { display: block; font-size: 20px; color: var(--text); }
 /* Explainer */
 .explain { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .explain > h2 { font-size: 32px; }
-.explain-lead { font-size: 19px; color: var(--muted); margin-top: 12px; max-width: 60ch; }
-.explain-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-4); align-items: start; margin-top: var(--space-3); }
-.explain-text { max-width: 68ch; }
-.explain-text h3 { margin: var(--space-4) 0 10px; }
+.explain-lead { font-size: 19px; color: var(--muted); margin-top: 12px; max-width: 64ch; }
+.explain-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-4); align-items: start; }
+.toc { position: sticky; top: var(--space-3); }
+.toc-title { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+.toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+.toc a { display: block; padding: 6px 0 6px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 15px; line-height: 1.35; }
+.toc a:hover { color: var(--text); }
+.toc a.current { color: var(--text); border-left-color: var(--text); font-weight: 600; }
+.explain-text { max-width: 72ch; min-width: 0; }
+.explain-text h3 { font-size: 21px; margin: var(--space-5) 0 12px; scroll-margin-top: var(--space-3); }
 .explain-text > h3:first-child { margin-top: 0; }
-.explain-text p + p { margin-top: 12px; }
-.explain-text ul { margin: 12px 0; padding-left: 22px; }
-.explain-text li { margin-bottom: 6px; }
-.explain-wide { margin-top: var(--space-4); }
-.example { margin: 0; padding: var(--space-3); background: var(--surface); border-radius: var(--radius); }
+.explain-text h4 { font-size: 16px; margin: 0 0 8px; }
+.explain-text p + p, .explain-text ul + p, .explain-text .table-wrap + p, .explain-text p + .table-wrap { margin-top: 12px; }
+.explain-text ul, .explain-text ol { margin: 12px 0; padding-left: 22px; }
+.explain-text li { margin-bottom: 8px; }
+.explain-text li::marker { color: var(--muted); }
+.steps li { padding-left: 4px; }
+table.ref { font-size: 15px; }
+table.ref th, table.ref td { padding: 10px 14px 10px 0; vertical-align: top; }
+table.ref th { border-bottom-color: var(--line); }
+table.ref td.mono, table.ref .mono { font-size: 14px; word-break: break-word; }
+.browsers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 var(--space-3); }
+.browsers ol { margin: 0; padding-left: 20px; font-size: 15px; }
+.browsers li { margin-bottom: 6px; }
+.defs { margin: 12px 0 0; }
+.defs dt { font-weight: 650; margin-top: var(--space-2); }
+.defs dt:first-child { margin-top: 0; }
+.defs dd { margin: 4px 0 0; }
+.example { margin: var(--space-3) 0 0; padding: var(--space-3); background: var(--surface); border-radius: var(--radius); max-width: 460px; }
 .example figcaption { font-weight: 650; margin-bottom: var(--space-2); }
 .example-page { display: inline-block; margin-bottom: 8px; color: var(--muted); }
 .example table th, .example table td { padding: 8px 0; }
@@ -255,8 +274,12 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
   .empty-note { padding-left: 0; }
   .findings li { font-size: 17px; }
   .explain > h2 { font-size: 26px; }
-  .explain-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .explain-layout { grid-template-columns: 1fr; gap: var(--space-3); }
+  .toc { position: static; }
+  .explain-text h3 { font-size: 19px; margin-top: var(--space-4); }
+  .browsers { grid-template-columns: 1fr; }
   .example { padding: var(--space-2); }
+  table.ref th, table.ref td { padding-right: 10px; }
   .privacy { align-items: flex-start; }
   .privacy svg { margin-top: 3px; }
   th, td { padding: 10px 8px 10px 0; }
@@ -351,60 +374,206 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
 
   <section class="explain" id="how-it-works" aria-labelledby="explain-title">
     <h2 id="explain-title">How Tracker Lens works</h2>
-    <p class="explain-lead">A website is rarely built by one company alone. This page shows who else was involved in your visit.</p>
+    <p class="explain-lead">A website is rarely built by one company alone. While a page loads, your browser quietly talks to many other companies. This guide explains what that means, how Tracker Lens measures it, and how to run a fair comparison.</p>
 
-    <div class="explain-grid">
+    <div class="explain-layout">
+      <nav class="toc" aria-label="Guide contents">
+        <p class="toc-title">On this page</p>
+        <ol>
+          <li><a href="#x-visit">What happens on a visit</a></li>
+          <li><a href="#x-learn">What companies learn</a></li>
+          <li><a href="#x-kinds">Kinds of outside domains</a></li>
+          <li><a href="#x-counts">What Tracker Lens counts</a></li>
+          <li><a href="#x-calc">How the count is calculated</a></li>
+          <li><a href="#x-record">Recording a HAR file</a></li>
+          <li><a href="#x-read">Reading the results</a></li>
+          <li><a href="#x-compare">Designing a comparison</a></li>
+          <li><a href="#x-limits">What it cannot tell you</a></li>
+          <li><a href="#x-data">Your data</a></li>
+          <li><a href="#x-terms">Terms used here</a></li>
+        </ol>
+      </nav>
+
       <div class="explain-text">
-        <h3>What happens when you open a website</h3>
-        <p>Your browser loads the page from the website itself, and then loads more pieces from other companies: ads, statistics, fonts, videos, share buttons. Every one of these requests tells that company which page you are on, and often comes with a cookie that recognises your browser again later.</p>
-        <p>Most of this happens out of sight. The page looks the same whether it talked to two companies or eighty.</p>
+        <h3 id="x-visit">What happens on a visit</h3>
+        <p>When you type an address such as <code>example-news.com</code>, your browser first downloads the page itself from that website. The page then tells the browser to fetch many more pieces: images, fonts, scripts, videos, ads. Many of these pieces do not come from the website you opened. They come from other companies.</p>
+        <p>Each piece is a separate <b>request</b>: the browser asks a server for a file and gets an answer. A typical news page makes a few hundred requests, often to 50 or more different companies, within the first seconds. None of this is visible on the page. It looks the same whether it talked to two companies or eighty.</p>
 
-        <h3>What Tracker Lens counts</h3>
-        <p>For every page in your file, it counts the <b>outside domains</b>: the different websites, other than the one you opened, that your browser contacted. Addresses are grouped by their main domain, so <code>securepubads.g.doubleclick.net</code> and <code>ad.doubleclick.net</code> count once, as <code>doubleclick.net</code>.</p>
-        <p>It counts companies rather than requests on purpose. One ad server can send fifty requests, but it is still one company that learned about the visit.</p>
+        <h3 id="x-learn">What companies learn from a request</h3>
+        <p>A request is not only a download. It also carries information to the company that answers it:</p>
+        <ul>
+          <li><b>Which site you are on.</b> The browser tells the server where the request comes from. Scripts loaded from that company can also read the full address of the page you are reading.</li>
+          <li><b>Who you are, roughly.</b> Your IP address, browser, language, screen size and time zone go with every request. Together they can recognise a browser even without cookies.</li>
+          <li><b>Whether they have seen you before.</b> A company can store a cookie with an ID in your browser. When another website loads something from the same company, that cookie comes back, and the company knows the same browser visited both sites. Firefox and Safari block many of these cookies by default; Chrome still allows most of them.</li>
+          <li><b>What other companies call you.</b> Ad companies exchange their IDs for the same browser, a practice called cookie syncing. In a HAR file it shows up as a burst of short requests to many ad domains at once.</li>
+        </ul>
+        <p>On pages with ads, there is usually an auction behind the scenes: the page asks several ad companies what they would pay to show you an ad. Every company asked in that auction appears as an outside domain.</p>
+
+        <h3 id="x-kinds">Kinds of outside domains</h3>
+        <p>Tracker Lens does not sort domains into groups, but knowing the common kinds helps you read your results. Some outside domains are needed for the page to work. Others exist only to measure or target visitors.</p>
+        <div class="table-wrap">
+          <table class="ref">
+            <thead><tr><th scope="col">Kind</th><th scope="col">What it does</th><th scope="col">Common examples</th></tr></thead>
+            <tbody>
+              <tr><td>Advertising</td><td>Runs ad auctions, delivers ads, measures views</td><td class="mono">doubleclick.net, adnxs.com, rubiconproject.com, pubmatic.com, criteo.com</td></tr>
+              <tr><td>Identity and syncing</td><td>Gives your browser an ID and shares it between ad companies</td><td class="mono">id5-sync.com, adsrvr.org, rlcdn.com</td></tr>
+              <tr><td>Analytics</td><td>Counts visits, clicks and scrolling for the site owner</td><td class="mono">google-analytics.com, hotjar.com, chartbeat.net</td></tr>
+              <tr><td>Social media</td><td>Share buttons, embedded posts, conversion pixels</td><td class="mono">facebook.net, twitter.com, tiktok.com</td></tr>
+              <tr><td>Tag managers</td><td>Load other scripts on behalf of the site</td><td class="mono">googletagmanager.com</td></tr>
+              <tr><td>Consent banners</td><td>Show the cookie banner and store your choice</td><td class="mono">cookielaw.org, consensu.org, usercentrics.eu</td></tr>
+              <tr><td>Content delivery</td><td>Serve fonts, images, video and code libraries</td><td class="mono">gstatic.com, cloudflare.com, jsdelivr.net, akamaihd.net</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>A content delivery domain usually just hands out files, but it still sees which site you are on. A tag manager on its own collects little, yet it often loads many of the other kinds.</p>
+
+        <h3 id="x-counts">What Tracker Lens counts</h3>
+        <p>For every page in your file, Tracker Lens counts the <b>outside domains</b>: the different websites, other than the one you opened, that your browser contacted while that page was loaded.</p>
+        <p>It counts companies, not requests, on purpose. One ad server can send fifty requests, but it is still one company that learned about the visit. The number of requests is shown too, in the page list, because it tells you how busy each company was.</p>
+
+        <figure class="example" aria-labelledby="example-cap">
+          <figcaption id="example-cap">Example: one visit to a news site</figcaption>
+          <p class="example-page mono">www.example-news.com</p>
+          <table>
+            <thead><tr><th scope="col">Outside domain</th><th scope="col" class="n">Requests</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">doubleclick.net</td><td class="n">14</td></tr>
+              <tr><td class="mono">adnxs.com</td><td class="n">6</td></tr>
+              <tr><td class="mono">rubiconproject.com</td><td class="n">5</td></tr>
+              <tr><td class="mono">pubmatic.com</td><td class="n">4</td></tr>
+              <tr><td class="mono">criteo.com</td><td class="n">3</td></tr>
+              <tr><td class="mono">googletagmanager.com</td><td class="n">3</td></tr>
+            </tbody>
+          </table>
+          <p class="example-result"><span class="big num">6</span> outside domains, 35 requests to them. <span class="muted">The 9 requests to <code>cdn.example-news.com</code> are not counted, because that is part of the site itself.</span></p>
+        </figure>
+
+        <h3 id="x-calc">How the count is calculated</h3>
+        <ol class="steps">
+          <li><b>Find the pages.</b> A HAR file lists every request and, for most browsers, which page load it belongs to. Every page load becomes one page in Tracker Lens. If a file has no page information, the whole file is treated as one page.</li>
+          <li><b>Find the main domain of each request.</b> The address is shortened to the part a company registers. Subdomains are dropped, so all addresses of one company's domain count once.</li>
+          <li><b>Compare with the page.</b> If the main domain of a request differs from the main domain of the page, the request is outside.</li>
+          <li><b>Count.</b> For each page: the number of different outside domains, and the number of outside requests. For each file: the average over its pages.</li>
+        </ol>
+        <p>Step 2 for a few real addresses, on a page of <code>example-news.com</code>:</p>
+        <div class="table-wrap">
+          <table class="ref">
+            <thead><tr><th scope="col">Request address</th><th scope="col">Main domain</th><th scope="col">Outside?</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">https://securepubads.g.doubleclick.net/gampad/ads</td><td class="mono">doubleclick.net</td><td>Yes</td></tr>
+              <tr><td class="mono">https://ad.doubleclick.net/pixel</td><td class="mono">doubleclick.net</td><td>Yes, same domain as above, counted once</td></tr>
+              <tr><td class="mono">https://cdn.example-news.com/logo.png</td><td class="mono">example-news.com</td><td>No, part of the site</td></tr>
+              <tr><td class="mono">https://news.bbc.co.uk/story</td><td class="mono">bbc.co.uk</td><td>Yes. Endings like <code>co.uk</code> have two parts</td></tr>
+              <tr><td class="mono">data:image/png;base64,…</td><td class="muted">none</td><td>Ignored, not a web request</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="x-record">Recording a HAR file</h3>
+        <p>A HAR file (HTTP Archive) is a recording of the requests your browser made, saved from the browser's developer tools. Every major browser can create one.</p>
+        <div class="browsers">
+          <div>
+            <h4>Chrome and Edge</h4>
+            <ol>
+              <li>Press <kbd>F12</kbd> (on a Mac <kbd>⌥ ⌘ I</kbd>) and open the <b>Network</b> tab.</li>
+              <li>Tick <b>Preserve log</b> and <b>Disable cache</b>.</li>
+              <li>Click the clear button, then visit your pages.</li>
+              <li>Click the download arrow in the Network toolbar, or right click the list and choose <b>Save all as HAR</b>.</li>
+            </ol>
+          </div>
+          <div>
+            <h4>Firefox</h4>
+            <ol>
+              <li>Press <kbd>F12</kbd> and open the <b>Network</b> tab.</li>
+              <li>In the gear menu, turn on <b>Persist Logs</b>. Tick <b>Disable Cache</b>.</li>
+              <li>Clear the list, then visit your pages.</li>
+              <li>Right click the list and choose <b>Save All As HAR</b>.</li>
+            </ol>
+          </div>
+          <div>
+            <h4>Safari</h4>
+            <ol>
+              <li>In Settings, Advanced, turn on the developer features.</li>
+              <li>Open <b>Develop</b>, <b>Show Web Inspector</b>, <b>Network</b>.</li>
+              <li>Turn on <b>Preserve Log</b>, then visit your pages.</li>
+              <li>Click <b>Export</b> in the Network tab.</li>
+            </ol>
+          </div>
+        </div>
+        <p>For a clean recording:</p>
+        <ul>
+          <li>Use a private window, so earlier visits and logins do not affect the result.</li>
+          <li>Open each page by typing or pasting its address, so every visit becomes its own page in the file.</li>
+          <li>Stay on each page for about 30 seconds and scroll down once. Many ads and trackers only load after a delay or when you scroll.</li>
+          <li>Decide beforehand how you answer cookie banners, and answer them the same way on every site.</li>
+          <li>Pages that change content without reloading, such as some web apps, stay one page in the file.</li>
+        </ul>
+
+        <h3 id="x-read">Reading the results</h3>
+        <dl class="defs">
+          <dt>What the files show</dt>
+          <dd>The main results in plain sentences. With two or more files, every file is compared with the first one you loaded, so load your baseline first.</dd>
+          <dt>Outside domains per page</dt>
+          <dd>One row per file. The large number is the average count of outside domains per page. The row also shows how many pages the file has, how many different outside domains appeared in total, and the highest count on a single page. Click a name to rename the file.</dd>
+          <dt>Site by site</dt>
+          <dd>Every website from every file, with its count in each file and the change between them. Websites found in all files come first, because only those can be compared fairly. A website you opened several times shows the average of those visits. The bar chart below shows the plain average over all pages of each file.</dd>
+          <dt>Domains found in one file only</dt>
+          <dd>Outside domains that appeared in one session and not in the others. This is usually the clearest sign of what your change did, for example the ad companies that disappear when you reject cookies.</dd>
+          <dt>Every page</dt>
+          <dd>Every page of a file, sorted by its count. Open a page to see each outside domain with its number of requests, longest bar first.</dd>
+          <dt>CSV export</dt>
+          <dd>One row per page with the columns <code>file_label</code>, <code>page_url</code>, <code>third_party_domains</code> and <code>third_party_requests</code>, ready for a spreadsheet or statistics software.</dd>
+        </dl>
+
+        <h3 id="x-compare">Designing a comparison</h3>
+        <p>One file shows how a set of websites behaves. Two files show what a change does. Record the same websites twice and change exactly one thing in between. Questions you can answer this way:</p>
+        <ul>
+          <li>How many companies disappear when I reject cookies instead of accepting them?</li>
+          <li>How much does an ad blocker or a privacy browser reduce the number of outside domains?</li>
+          <li>Does a browser profile that has been browsing for a week attract more companies than a fresh one?</li>
+          <li>Do the same news sites behave differently in another country or on a phone?</li>
+        </ul>
+        <p>To keep the comparison fair:</p>
+        <ul>
+          <li>Visit the same websites, in the same order, with the same time on each page.</li>
+          <li>Record both sessions close together in time. Ad activity changes over the day and the week.</li>
+          <li>Record each session at least three times and load all files. If the differences between your repeats are as large as the difference between your two setups, the change probably did nothing.</li>
+          <li>Name each file after its setup, for example <code>accept-1</code> and <code>reject-1</code>, and write down when and how you recorded it.</li>
+        </ul>
+
+        <h3 id="x-limits">What it cannot tell you</h3>
+        <ul>
+          <li><b>What the companies did with the information.</b> A contacted domain may be a harmless font server or an ad network building a profile. The count does not tell them apart.</li>
+          <li><b>Who owns a domain.</b> Several domains can belong to one company, for example <code>doubleclick.net</code> and <code>googletagmanager.com</code> both belong to Google. They are counted separately.</li>
+          <li><b>A site's own other domains.</b> Some sites load files from a second domain they own, such as a separate image domain. Tracker Lens cannot know that and counts it as outside.</li>
+          <li><b>Disguised trackers.</b> Some trackers run under a subdomain of the site itself, such as <code>metrics.example-news.com</code>. They look like part of the site and are not counted.</li>
+          <li><b>Anything your browser did not load.</b> Companies also share data directly between their servers. That never appears in a HAR file.</li>
+          <li><b>Rare domain endings.</b> Two part endings such as <code>co.uk</code> come from a short built in list, not the full official list. A few uncommon endings may be grouped wrongly.</li>
+        </ul>
+        <p>Results also vary from visit to visit, because ads and tracking scripts change with time and demand. A single recording is one observation, not a fact about a website.</p>
+
+        <h3 id="x-data">Your data</h3>
+        <p>The file is read inside this browser tab and never sent anywhere. There is no server behind this page, and it also works offline if you download it.</p>
+        <p>Be careful when sharing HAR files with other people. They contain every address you visited during the recording and, depending on the browser, can contain cookies, login tokens or form entries. Recent versions of Chrome remove cookies when exporting by default. Record in a private window without logging in anywhere, and the file stays harmless.</p>
+
+        <h3 id="x-terms">Terms used here</h3>
+        <dl class="defs">
+          <dt>Request</dt>
+          <dd>One file the browser asks a server for: an image, a script, a pixel, a piece of data.</dd>
+          <dt>Domain</dt>
+          <dd>The name of a server in an address, such as <code>securepubads.g.doubleclick.net</code>.</dd>
+          <dt>Main domain</dt>
+          <dd>The part of a domain that a company registers, such as <code>doubleclick.net</code>. Also called the registrable domain.</dd>
+          <dt>First party</dt>
+          <dd>The website you opened, including all its subdomains.</dd>
+          <dt>Outside domain</dt>
+          <dd>Any main domain other than the first party. Also called a third party.</dd>
+          <dt>Cookie</dt>
+          <dd>A small piece of text a server stores in your browser and receives back on later requests. Often holds an ID.</dd>
+          <dt>HAR file</dt>
+          <dd>A recording of all requests in a browser session, in a standard format every browser can export.</dd>
+        </dl>
       </div>
-
-      <figure class="example" aria-labelledby="example-cap">
-        <figcaption id="example-cap">Example: one visit to a news site</figcaption>
-        <p class="example-page mono">www.example-news.com</p>
-        <table>
-          <thead><tr><th scope="col">Outside domain</th><th scope="col" class="n">Requests</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">doubleclick.net</td><td class="n">14</td></tr>
-            <tr><td class="mono">adnxs.com</td><td class="n">6</td></tr>
-            <tr><td class="mono">rubiconproject.com</td><td class="n">5</td></tr>
-            <tr><td class="mono">pubmatic.com</td><td class="n">4</td></tr>
-            <tr><td class="mono">criteo.com</td><td class="n">3</td></tr>
-            <tr><td class="mono">googletagmanager.com</td><td class="n">3</td></tr>
-          </tbody>
-        </table>
-        <p class="example-result"><span class="big num">6</span> outside domains on this page. <span class="muted">Requests to <code>cdn.example-news.com</code> are not counted, because that is the site itself.</span></p>
-      </figure>
-    </div>
-
-    <div class="explain-text explain-wide">
-      <h3>What a HAR file is</h3>
-      <p>A HAR file (HTTP Archive) is a recording of everything your browser loaded, saved from the browser's developer tools. It lists every request with its address and timing. Tracker Lens reads only the addresses and which page they belong to.</p>
-
-      <h3>Comparing two sessions</h3>
-      <p>One file shows how a set of websites behaves. Two files show what a change does. Record the same websites twice and change one thing in between, for example:</p>
-      <ul>
-        <li>accepting all cookies versus rejecting them in the consent banner</li>
-        <li>a normal browser versus one with an ad blocker</li>
-        <li>a fresh browser profile versus one that has been browsing for a week</li>
-      </ul>
-      <p>Tracker Lens then matches the websites across both files and reports the change for each one. Websites that appear in only one file are left out of the comparison, because a different website is not a fair comparison.</p>
-
-      <h3>What it cannot tell you</h3>
-      <ul>
-        <li>What the companies did with the information. A contacted domain may be a harmless font server or an ad network building a profile.</li>
-        <li>Who owns a domain. Several domains can belong to one company.</li>
-        <li>Anything your browser did not load. Data shared between companies' servers is invisible here.</li>
-      </ul>
-      <p>Results also vary from visit to visit, because ads and tracking scripts change with time and demand. Record each session more than once before you draw conclusions.</p>
-
-      <h3>Your data</h3>
-      <p>The file is read inside this browser tab and never sent anywhere. The page works offline too. Be careful when sharing HAR files with other people: they can contain the addresses you visited and, in some browsers, cookies or form data.</p>
     </div>
   </section>
 
@@ -919,6 +1088,18 @@ window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => { if (state.files.length > 1) renderChart(); }, 150);
 });
+
+// Highlight the guide section currently on screen in the contents list.
+if ("IntersectionObserver" in window) {
+  const links = new Map([...document.querySelectorAll(".toc a")].map(a => [a.getAttribute("href").slice(1), a]));
+  const seen = new Set();
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => e.isIntersecting ? seen.add(e.target.id) : seen.delete(e.target.id));
+    const first = [...links.keys()].find(id => seen.has(id));
+    if (first) links.forEach((a, id) => a.classList.toggle("current", id === first));
+  }, { rootMargin: "0px 0px -70% 0px" });
+  links.forEach((_, id) => { const h = document.getElementById(id); if (h) io.observe(h); });
+}
 
 // Exposed for tests in the browser console.
 window.TrackerLens = { registrableDomain, domainOf, analyseHar, findings, stats };
