@@ -212,6 +212,29 @@ details.page .stat b { display: block; font-size: 20px; color: var(--text); }
 .domains .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
 .empty-note { padding: 0 0 var(--space-2) 40px; color: var(--muted); }
 
+/* Explainer */
+.explain { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+.explain > h2 { font-size: 32px; }
+.explain-lead { font-size: 19px; color: var(--muted); margin-top: 12px; max-width: 60ch; }
+.explain-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-4); align-items: start; margin-top: var(--space-3); }
+.explain-text { max-width: 68ch; }
+.explain-text h3 { margin: var(--space-4) 0 10px; }
+.explain-text > h3:first-child { margin-top: 0; }
+.explain-text p + p { margin-top: 12px; }
+.explain-text ul { margin: 12px 0; padding-left: 22px; }
+.explain-text li { margin-bottom: 6px; }
+.explain-wide { margin-top: var(--space-4); }
+.example { margin: 0; padding: var(--space-3); background: var(--surface); border-radius: var(--radius); }
+.example figcaption { font-weight: 650; margin-bottom: var(--space-2); }
+.example-page { display: inline-block; margin-bottom: 8px; color: var(--muted); }
+.example table th, .example table td { padding: 8px 0; }
+.example table th { border-bottom-color: var(--line); }
+.example tr:last-child td { border-bottom: 0; }
+.example-result { margin-top: var(--space-2); }
+.example-result .big { font-size: 32px; font-weight: 700; margin-right: 6px; vertical-align: -3px; }
+.example-result .muted { display: block; margin-top: 8px; font-size: 15px; }
+.jump { color: var(--text); text-underline-offset: 3px; }
+
 footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1px solid var(--line); color: var(--muted); max-width: 72ch; }
 
 @media (max-width: 760px) {
@@ -231,6 +254,11 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
   .domains li { grid-template-columns: minmax(0, 1fr) 64px 36px; gap: 10px; }
   .empty-note { padding-left: 0; }
   .findings li { font-size: 17px; }
+  .explain > h2 { font-size: 26px; }
+  .explain-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .example { padding: var(--space-2); }
+  .privacy { align-items: flex-start; }
+  .privacy svg { margin-top: 3px; }
   th, td { padding: 10px 8px 10px 0; }
   th { font-size: 14px; }
   td.site { word-break: break-word; }
@@ -251,7 +279,7 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
     <p class="lead">See which outside companies a website contacted while you browsed. Load a HAR file from your browser, or two to compare browsing sessions.</p>
     <p class="privacy">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-      Files stay on your computer. Nothing is uploaded.
+      <span>Files stay on your computer. Nothing is uploaded. <a class="jump" href="#how-it-works">How it works</a></span>
     </p>
   </header>
 
@@ -321,8 +349,67 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
     </section>
   </div>
 
+  <section class="explain" id="how-it-works" aria-labelledby="explain-title">
+    <h2 id="explain-title">How Tracker Lens works</h2>
+    <p class="explain-lead">A website is rarely built by one company alone. This page shows who else was involved in your visit.</p>
+
+    <div class="explain-grid">
+      <div class="explain-text">
+        <h3>What happens when you open a website</h3>
+        <p>Your browser loads the page from the website itself, and then loads more pieces from other companies: ads, statistics, fonts, videos, share buttons. Every one of these requests tells that company which page you are on, and often comes with a cookie that recognises your browser again later.</p>
+        <p>Most of this happens out of sight. The page looks the same whether it talked to two companies or eighty.</p>
+
+        <h3>What Tracker Lens counts</h3>
+        <p>For every page in your file, it counts the <b>outside domains</b>: the different websites, other than the one you opened, that your browser contacted. Addresses are grouped by their main domain, so <code>securepubads.g.doubleclick.net</code> and <code>ad.doubleclick.net</code> count once, as <code>doubleclick.net</code>.</p>
+        <p>It counts companies rather than requests on purpose. One ad server can send fifty requests, but it is still one company that learned about the visit.</p>
+      </div>
+
+      <figure class="example" aria-labelledby="example-cap">
+        <figcaption id="example-cap">Example: one visit to a news site</figcaption>
+        <p class="example-page mono">www.example-news.com</p>
+        <table>
+          <thead><tr><th scope="col">Outside domain</th><th scope="col" class="n">Requests</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">doubleclick.net</td><td class="n">14</td></tr>
+            <tr><td class="mono">adnxs.com</td><td class="n">6</td></tr>
+            <tr><td class="mono">rubiconproject.com</td><td class="n">5</td></tr>
+            <tr><td class="mono">pubmatic.com</td><td class="n">4</td></tr>
+            <tr><td class="mono">criteo.com</td><td class="n">3</td></tr>
+            <tr><td class="mono">googletagmanager.com</td><td class="n">3</td></tr>
+          </tbody>
+        </table>
+        <p class="example-result"><span class="big num">6</span> outside domains on this page. <span class="muted">Requests to <code>cdn.example-news.com</code> are not counted, because that is the site itself.</span></p>
+      </figure>
+    </div>
+
+    <div class="explain-text explain-wide">
+      <h3>What a HAR file is</h3>
+      <p>A HAR file (HTTP Archive) is a recording of everything your browser loaded, saved from the browser's developer tools. It lists every request with its address and timing. Tracker Lens reads only the addresses and which page they belong to.</p>
+
+      <h3>Comparing two sessions</h3>
+      <p>One file shows how a set of websites behaves. Two files show what a change does. Record the same websites twice and change one thing in between, for example:</p>
+      <ul>
+        <li>accepting all cookies versus rejecting them in the consent banner</li>
+        <li>a normal browser versus one with an ad blocker</li>
+        <li>a fresh browser profile versus one that has been browsing for a week</li>
+      </ul>
+      <p>Tracker Lens then matches the websites across both files and reports the change for each one. Websites that appear in only one file are left out of the comparison, because a different website is not a fair comparison.</p>
+
+      <h3>What it cannot tell you</h3>
+      <ul>
+        <li>What the companies did with the information. A contacted domain may be a harmless font server or an ad network building a profile.</li>
+        <li>Who owns a domain. Several domains can belong to one company.</li>
+        <li>Anything your browser did not load. Data shared between companies' servers is invisible here.</li>
+      </ul>
+      <p>Results also vary from visit to visit, because ads and tracking scripts change with time and demand. Record each session more than once before you draw conclusions.</p>
+
+      <h3>Your data</h3>
+      <p>The file is read inside this browser tab and never sent anywhere. The page works offline too. Be careful when sharing HAR files with other people: they can contain the addresses you visited and, in some browsers, cookies or form data.</p>
+    </div>
+  </section>
+
   <footer>
-    <p>Tracker Lens groups addresses by their main domain using a short built in list of endings such as co.uk, so a few rare endings may be grouped imperfectly. It shows what your browser contacted, not what those companies did with the data.</p>
+    <p>Tracker Lens groups addresses by their main domain using a short built in list of endings such as co.uk, so a few rare endings may be grouped imperfectly. <a class="jump" href="https://github.com/NovaSyntax811/tracker-lens">Source code on GitHub</a></p>
   </footer>
 </main>
 
