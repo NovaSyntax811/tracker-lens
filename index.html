@@ -8,49 +8,40 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%23c2410c' stroke-width='3.5'/%3E%3Cpath d='M21 21l7 7' stroke='%23c2410c' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 /* ------------------------------------------------------------------
-   Theme. Every color lives here so the look can be changed in one place.
+   Theme. Every color and size step lives here.
    ------------------------------------------------------------------ */
 :root {
-  --bg: #f6f3ee;
-  --surface: #ffffff;
-  --surface-2: #faf8f4;
-  --text: #1f1d1a;
-  --muted: #625d55;
-  --line: #e3ded4;
-  --accent: #c2410c;          /* main accent: buttons, focus, highlights */
-  --accent-soft: #fbe6da;
-  --accent-text: #ffffff;
+  --bg: #ffffff;
+  --surface: #f4f4f5;          /* chips, hover rows, bar tracks */
+  --text: #18181b;
+  --muted: #52525b;            /* 7.7:1 on white */
+  --line: #e4e4e7;
+  --accent: #c2410c;           /* logo mark only */
   --danger: #b42318;
-  --danger-soft: #fde8e6;
-  --ok: #1d6b45;
+  --ok: #15803d;
   --focus: #1d4ed8;
-  --radius: 14px;
-  --shadow: 0 1px 2px rgba(31, 29, 26, .05), 0 6px 20px rgba(31, 29, 26, .05);
-  /* One color per uploaded file, reused in cards, bars and badges. */
+  --radius: 10px;
+  /* One color per uploaded file, reused in chart, dots and bars. */
   --file-0: #c2410c;
   --file-1: #1d6fa5;
   --file-2: #6b4fb3;
   --file-3: #2f7d4f;
   --file-4: #a1306b;
   --file-5: #8a6a12;
+  --space-1: 8px; --space-2: 16px; --space-3: 24px; --space-4: 40px; --space-5: 64px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141311;
-    --surface: #1d1c19;
-    --surface-2: #23221e;
-    --text: #efece6;
-    --muted: #a8a299;
-    --line: #34322d;
+    --bg: #121214;
+    --surface: #1f1f23;
+    --text: #ededef;
+    --muted: #a1a1aa;          /* 7.4:1 on the dark background */
+    --line: #2e2e33;
     --accent: #fb8a4c;
-    --accent-soft: #3a2418;
-    --accent-text: #1a0d05;
     --danger: #ff8a7a;
-    --danger-soft: #3a1c18;
     --ok: #6fd3a0;
     --focus: #8ab4ff;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
     --file-0: #fb8a4c;
     --file-1: #6cb6e8;
     --file-2: #b49cf2;
@@ -64,210 +55,186 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  margin: 0; background: var(--bg); color: var(--text);
   font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-main { max-width: 1100px; margin: 0 auto; padding: 40px 16px 80px; }
-h1, h2, h3 { line-height: 1.2; margin: 0; }
-h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -.02em; }
-h2 { font-size: 21px; letter-spacing: -.01em; margin-bottom: 14px; }
-h3 { font-size: 16px; }
-p { margin: 0; }
-a { color: var(--accent); }
+main { max-width: 1040px; margin: 0 auto; padding: var(--space-4) var(--space-2) var(--space-5); }
+h1, h2, h3 { line-height: 1.2; margin: 0; text-wrap: balance; }
+h1 { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
+h2 { font-size: 26px; font-weight: 650; letter-spacing: -.01em; }
+h3 { font-size: 18px; font-weight: 650; }
+p { margin: 0; text-wrap: pretty; }
+.prose { max-width: 68ch; }
 .muted { color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; }
-.visually-hidden {
-  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap;
-}
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
 
 /* Header */
-.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.brand svg { flex: none; }
-.lead { font-size: 18px; color: var(--muted); max-width: 640px; }
-.privacy {
-  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
-  padding: 6px 12px; border-radius: 999px; background: var(--surface);
-  border: 1px solid var(--line); font-size: 14px; color: var(--muted);
-}
-.privacy svg { color: var(--ok); }
-header { margin-bottom: 32px; }
+header { margin-bottom: var(--space-4); }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: var(--space-2); }
+.lead { font-size: 19px; color: var(--muted); max-width: 60ch; }
+.privacy { display: flex; align-items: center; gap: 8px; margin-top: var(--space-2); color: var(--muted); }
+.privacy svg { color: var(--ok); flex: none; }
 
-/* Buttons */
+/* Buttons: neutral, at least 40px tall */
 .btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  font: inherit; font-weight: 600; font-size: 15px;
-  padding: 10px 18px; border-radius: 10px; cursor: pointer;
-  border: 1px solid transparent; background: var(--accent); color: var(--accent-text);
-  transition: transform .15s ease, filter .15s ease, background .15s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px;
+  font: inherit; font-weight: 600; padding: 9px 18px; border-radius: var(--radius); cursor: pointer;
+  border: 1px solid var(--text); background: var(--text); color: var(--bg);
+  transition: opacity .15s ease;
 }
-.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
-.btn.secondary { background: var(--surface); color: var(--text); border-color: var(--line); }
-.btn.secondary:hover { background: var(--surface-2); }
-.btn.small { padding: 6px 12px; font-size: 14px; }
+.btn:hover { opacity: .86; }
+.btn.secondary { background: transparent; color: var(--text); border-color: var(--line); }
+.btn.secondary:hover { opacity: 1; background: var(--surface); }
 
-/* Upload area: large when empty, compact once files are loaded */
-.upload { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: stretch; }
+/* Upload */
+.upload { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-4); align-items: start; }
 .dropzone {
-  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; text-align: center; min-height: 300px; padding: 32px 24px;
-  border: 2px dashed var(--line); border-radius: var(--radius); background: var(--surface);
-  cursor: pointer; transition: border-color .2s ease, background .2s ease, min-height .25s ease;
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2);
+  padding: var(--space-4) var(--space-3); border: 2px dashed var(--line); border-radius: var(--radius);
+  cursor: pointer; transition: border-color .2s ease, background .2s ease;
 }
-.dropzone:hover { border-color: var(--accent); }
-.dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
-.dropzone .icon {
-  width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center;
-  background: var(--accent-soft); color: var(--accent);
-}
-.dropzone strong { font-size: 19px; }
-.howto {
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 22px 24px; box-shadow: var(--shadow);
-}
-.howto ol { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: step; }
-.howto li { counter-increment: step; display: grid; grid-template-columns: 30px 1fr; gap: 10px; margin: 0 0 12px; }
-.howto li::before {
-  content: counter(step); width: 26px; height: 26px; border-radius: 50%;
-  display: grid; place-items: center; font-size: 13px; font-weight: 700;
-  background: var(--accent-soft); color: var(--accent);
-}
-kbd {
-  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 6px;
-  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface-2);
-}
+.dropzone:hover, .dropzone.dragover { border-color: var(--muted); }
+.dropzone.dragover { background: var(--surface); }
+.dropzone .title { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 650; }
+.dropzone .title svg { flex: none; color: var(--muted); }
+.howto ol { margin: var(--space-2) 0 0; padding-left: 22px; }
+.howto li { margin-bottom: 10px; padding-left: 4px; }
+.howto li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+.howto .alt { margin-top: var(--space-2); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); }
+kbd { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px; }
+
 body.has-results .upload { grid-template-columns: 1fr; }
-body.has-results .howto { display: none; }
-body.has-results .dropzone {
-  min-height: 0; flex-direction: row; justify-content: flex-start; text-align: left;
-  padding: 14px 18px; gap: 14px;
-}
-body.has-results .dropzone .icon { width: 40px; height: 40px; border-radius: 12px; }
-body.has-results .dropzone .icon svg { width: 20px; height: 20px; }
-body.has-results .dropzone strong { font-size: 16px; }
-body.has-results .dropzone .hint { display: none; }
-body.has-results .dropzone .btn { margin-left: auto; }
+body.has-results .howto, body.has-results .dropzone .hint { display: none; }
+body.has-results .dropzone { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 18px; }
+body.has-results .dropzone .title { font-size: 17px; }
 
 /* Status messages */
-.status { margin-top: 14px; min-height: 0; }
+.status { margin-top: var(--space-2); }
 .status:empty { display: none; }
-.status .msg {
-  display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 10px;
-  background: var(--surface); border: 1px solid var(--line); margin-bottom: 8px; font-size: 15px;
-}
-.status .msg.error { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
-.spinner {
-  width: 16px; height: 16px; border-radius: 50%; flex: none; margin-top: 3px;
-  border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite;
-}
+.status .msg { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+.status .msg.error { color: var(--danger); }
+.spinner { width: 16px; height: 16px; border-radius: 50%; flex: none; margin-top: 4px; border: 2px solid var(--line); border-top-color: var(--text); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Results */
-section.results { margin-top: 40px; }
-section.results[hidden] { display: none; }
-.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.section-head h2 { margin: 0; }
-.block { margin-top: 44px; }
+/* Results: sections sit on the background, hairlines divide rows */
+.results[hidden] { display: none; }
+.results > section { margin-top: var(--space-5); }
+.results > section > h2 { margin-bottom: 12px; }
+.results > section > .intro { margin-bottom: var(--space-3); color: var(--muted); }
+.toolbar { display: flex; gap: var(--space-1); flex-wrap: wrap; margin-top: var(--space-4); }
 
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.card {
-  position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 18px 20px 20px; box-shadow: var(--shadow); overflow: hidden;
-}
-.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--c); }
-.card label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-.card input {
-  width: 100%; font: inherit; font-weight: 650; font-size: 17px; color: var(--text);
-  background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 6px; margin-left: -7px;
-}
-.card input:hover { border-color: var(--line); }
-.card input:focus { border-color: var(--focus); outline: none; background: var(--surface-2); }
-.card .big { font-size: 46px; font-weight: 750; letter-spacing: -.03em; line-height: 1.05; margin-top: 14px; color: var(--c); }
-.card .unit { font-size: 14px; color: var(--muted); }
-.card .meta { display: flex; gap: 16px; margin-top: 14px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
-.card .meta b { color: var(--text); font-weight: 650; }
-.card .remove {
-  position: absolute; top: 12px; right: 10px; border: 0; background: transparent; color: var(--muted);
-  width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: grid; place-items: center;
-}
-.card .remove:hover { background: var(--surface-2); color: var(--text); }
+.findings { list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+.findings li { padding: var(--space-2) 0; border-top: 1px solid var(--line); font-size: 18px; }
+.findings li:last-child { border-bottom: 1px solid var(--line); }
+.findings b { font-weight: 650; }
+.findings .note { display: block; font-size: 16px; color: var(--muted); margin-top: 4px; }
+.caveat { margin-top: var(--space-2); color: var(--muted); max-width: 72ch; }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+.who { display: inline-flex; align-items: center; gap: 6px; font-weight: 650; }
+
+/* File summary rows */
+.files { border-top: 1px solid var(--line); }
+.file-row {
+  display: grid; grid-template-columns: minmax(160px, 1.2fr) auto 1.6fr auto; gap: var(--space-3);
+  align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--line);
+}
+.file-row .name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.file-row input {
+  width: 100%; min-width: 0; font: inherit; font-weight: 650; font-size: 18px; color: var(--text);
+  background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; margin-left: -8px;
+}
+.file-row input:hover { border-color: var(--line); }
+.file-row input:focus { border-color: var(--focus); outline: none; }
+.file-row .big { font-size: 36px; font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--c); }
+.file-row .facts { color: var(--muted); }
+.file-row .facts b { color: var(--text); font-weight: 600; }
+.icon-btn { border: 0; background: transparent; color: var(--muted); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.icon-btn:hover { background: var(--surface); color: var(--text); }
+
+/* Chart */
 .chart svg { display: block; width: 100%; height: auto; }
-.chart text { fill: var(--text); font: 14px system-ui, sans-serif; }
+.chart text { fill: var(--text); font: 15px system-ui, sans-serif; }
 .chart .value { font-weight: 700; font-variant-numeric: tabular-nums; }
 .chart .grid { stroke: var(--line); }
-.chart .axis { fill: var(--muted); font-size: 12px; }
-.chart rect.bar { transition: width .25s ease; }
+.chart .axis { fill: var(--muted); font-size: 13px; }
 
-.badge {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
-  padding: 2px 10px 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line);
-}
-.badge::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
-
-.diff { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.diff h3 { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 8px; border-radius: 7px;
-  background: var(--surface-2); border: 1px solid var(--line);
-}
-
-.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.tabs button {
-  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 7px 14px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--surface); color: var(--text);
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.tabs button::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
-.tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
-
+/* Tables */
 .table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-size: 13px; font-weight: 600; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; }
+caption { text-align: left; color: var(--muted); padding-bottom: 12px; }
+th, td { padding: 12px 14px 12px 0; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 15px; font-weight: 600; color: var(--muted); border-bottom-color: var(--text); }
+th .who { color: var(--text); font-weight: 600; }
 td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-td.url { word-break: break-all; }
-tr:last-child td { border-bottom: 0; }
+td.site { font-weight: 600; }
+tr.unmatched td { color: var(--muted); }
+.delta.up { color: var(--danger); }
+.delta.down { color: var(--ok); }
 
+/* Domains only in one file */
+.only { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-3) var(--space-4); }
+.only h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 4px 8px; border-radius: 6px; background: var(--surface); }
+
+/* Page detail */
+.tabs { display: flex; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-2); }
+.tabs button {
+  font: inherit; font-weight: 600; cursor: pointer; min-height: 40px; padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--text); display: inline-flex; align-items: center; gap: 8px;
+}
+.tabs button::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.pages { border-top: 1px solid var(--line); }
 details.page { border-bottom: 1px solid var(--line); }
-details.page:last-child { border-bottom: 0; }
 details.page summary {
-  list-style: none; cursor: pointer; display: grid; grid-template-columns: 22px 1fr auto auto; gap: 12px;
-  align-items: center; padding: 12px 4px; border-radius: 8px;
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: 20px 1fr auto auto; gap: var(--space-2);
+  align-items: center; padding: 14px 4px;
 }
 details.page summary::-webkit-details-marker { display: none; }
-details.page summary:hover { background: var(--surface-2); }
+details.page summary:hover { background: var(--surface); }
 details.page summary .chev { transition: transform .2s ease; color: var(--muted); }
 details.page[open] summary .chev { transform: rotate(90deg); }
 details.page .title { min-width: 0; }
-details.page .title b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-details.page .title span { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-details.page .stat { text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); white-space: nowrap; }
-details.page .stat b { display: block; font-size: 18px; color: var(--text); }
-.domains { list-style: none; margin: 0 0 14px; padding: 4px 0 0 34px; }
-.domains li { display: grid; grid-template-columns: minmax(120px, 260px) 1fr 52px; gap: 12px; align-items: center; padding: 4px 0; font-size: 14px; }
-.domains .d { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.domains .track { display: block; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+details.page .title b { display: block; font-weight: 600; }
+details.page .title span { display: block; font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details.page .stat { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; font-size: 15px; }
+details.page .stat b { display: block; font-size: 20px; color: var(--text); }
+.domains { list-style: none; margin: 0 0 var(--space-2); padding: 4px 0 0 40px; }
+.domains li { display: grid; grid-template-columns: minmax(140px, 280px) 1fr 48px; gap: var(--space-2); align-items: center; padding: 5px 0; }
+.domains .d { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.domains .track { display: block; height: 8px; border-radius: 999px; background: var(--surface); overflow: hidden; }
 .domains .fill { display: block; height: 100%; border-radius: 999px; background: var(--c); }
 .domains .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.empty-note { padding: 0 0 var(--space-2) 40px; color: var(--muted); }
 
-footer { margin-top: 60px; font-size: 14px; color: var(--muted); }
+footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1px solid var(--line); color: var(--muted); max-width: 72ch; }
 
 @media (max-width: 760px) {
-  main { padding-top: 28px; }
-  .upload { grid-template-columns: 1fr; }
-  .dropzone { min-height: 220px; }
-  body.has-results .dropzone { flex-wrap: wrap; }
-  body.has-results .dropzone .btn { margin-left: 0; }
-  details.page summary { grid-template-columns: 18px 1fr auto; }
+  main { padding-top: var(--space-3); }
+  h1 { font-size: 32px; }
+  h2 { font-size: 23px; }
+  .upload { grid-template-columns: 1fr; gap: var(--space-3); }
+  .dropzone { padding: var(--space-3) var(--space-2); }
+  body.has-results .dropzone { flex-wrap: wrap; gap: 12px; }
+  .file-row { grid-template-columns: 1fr auto; gap: 8px var(--space-2); }
+  .file-row .facts { grid-column: 1 / -1; }
+  .file-row .big { grid-row: 1; grid-column: 2; }
+  .file-row .icon-btn { display: none; }
+  details.page summary { grid-template-columns: 16px 1fr auto; }
   details.page summary .stat.req { display: none; }
   .domains { padding-left: 0; }
-  .domains li { grid-template-columns: minmax(0, 1fr) 70px 40px; }
+  .domains li { grid-template-columns: minmax(0, 1fr) 64px 36px; gap: 10px; }
+  .empty-note { padding-left: 0; }
+  .findings li { font-size: 17px; }
+  th, td { padding: 10px 8px 10px 0; }
+  th { font-size: 14px; }
+  td.site { word-break: break-word; }
+  th .who .dot { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -278,73 +245,84 @@ footer { margin-top: 60px; font-size: 14px; color: var(--muted); }
 <main>
   <header>
     <div class="brand">
-      <svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9" fill="none" stroke="var(--accent)" stroke-width="3.5"/><path d="M21 21l7 7" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9" fill="none" stroke="var(--accent)" stroke-width="3.5"/><path d="M21 21l7 7" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/></svg>
       <h1>Tracker Lens</h1>
     </div>
-    <p class="lead">Upload a HAR file from your browser and see how many outside companies each page you visited talked to. Compare two browsing sessions side by side.</p>
+    <p class="lead">See which outside companies a website contacted while you browsed. Load a HAR file from your browser, or two to compare browsing sessions.</p>
     <p class="privacy">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-      Files are processed only in your browser. Nothing is uploaded.
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      Files stay on your computer. Nothing is uploaded.
     </p>
   </header>
 
-  <section class="upload" aria-label="Upload HAR files">
-    <div class="dropzone" id="dropzone" role="button" tabindex="0"
-         aria-describedby="drop-hint" aria-label="Choose HAR files to analyse">
-      <div class="icon" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
-      </div>
-      <div>
-        <strong id="drop-title">Drop HAR files here</strong>
-        <p class="muted hint" id="drop-hint">One file per browsing session. Add two or more to compare them.</p>
-      </div>
+  <section class="upload" aria-label="Load HAR files">
+    <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-describedby="drop-hint">
+      <span class="title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+        <span id="drop-title">Drop HAR files here</span>
+      </span>
+      <p class="muted hint" id="drop-hint">One file per browsing session. Load two or more to compare them.</p>
       <span class="btn" aria-hidden="true">Choose files</span>
       <input type="file" id="file-input" accept=".har,application/json" multiple class="visually-hidden" tabindex="-1" aria-hidden="true">
     </div>
 
-    <aside class="howto" aria-labelledby="howto-title">
-      <h2 id="howto-title" style="margin:0">How to get a HAR file</h2>
+    <div class="howto">
+      <h2>How to get a HAR file</h2>
       <ol>
-        <li><span>Open Chrome DevTools with <kbd>F12</kbd> and go to the <b>Network</b> tab. Tick <b>Preserve log</b>.</span></li>
-        <li><span>Clear the log, then visit the pages you want to study.</span></li>
-        <li><span>Right click in the request list and choose <b>Save all as HAR</b>.</span></li>
-        <li><span>Drop the file here. Repeat with a second browsing profile to compare.</span></li>
+        <li>In Chrome, press <kbd>F12</kbd>, open the <b>Network</b> tab and tick <b>Preserve log</b>.</li>
+        <li>Clear the log, then visit the pages you want to study.</li>
+        <li>Right click the request list and choose <b>Save all as HAR</b>.</li>
+        <li>Drop the file here. Repeat with a second browsing session to compare.</li>
       </ol>
-      <p class="muted" style="font-size:14px">No HAR at hand? <button type="button" class="btn secondary small" id="load-examples">Load example files</button></p>
-    </aside>
+      <p class="alt">No file at hand? <button type="button" class="btn secondary" id="load-examples">Load example files</button></p>
+    </div>
   </section>
 
   <div class="status" id="status" aria-live="polite"></div>
 
-  <section class="results" id="results" hidden aria-labelledby="results-title">
-    <div class="section-head">
-      <h2 id="results-title">Third party domains per page</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="btn secondary small" id="download-csv">
+  <div class="results" id="results" hidden>
+    <section aria-labelledby="findings-title">
+      <h2 id="findings-title">What the files show</h2>
+      <ul class="findings" id="findings"></ul>
+      <p class="caveat" id="caveat"></p>
+    </section>
+
+    <section aria-labelledby="files-title">
+      <h2 id="files-title">Outside domains per page</h2>
+      <p class="intro prose">An outside domain is any website other than the one you opened, for example <code>doubleclick.net</code> on a news site. Each one learned that this page was visited. The large number is the average per page. Click a name to rename it.</p>
+      <div class="files" id="files"></div>
+      <div class="toolbar">
+        <button type="button" class="btn secondary" id="download-csv">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
           Download CSV
         </button>
-        <button type="button" class="btn secondary small" id="clear-all">Clear all</button>
+        <button type="button" class="btn secondary" id="clear-all">Clear all</button>
       </div>
-    </div>
-    <p class="muted" style="margin:-6px 0 18px;max-width:720px">A third party is any website domain other than the one you visited, for example <code>doubleclick.net</code> on a news site. The big number is the average count per page.</p>
-    <div class="cards" id="cards"></div>
+    </section>
 
-    <div class="block" id="compare-block" hidden>
-      <h2>Comparison</h2>
-      <div class="panel chart" id="chart"></div>
-      <div class="diff" id="diff" style="margin-top:16px"></div>
-    </div>
+    <section id="compare" aria-labelledby="compare-title" hidden>
+      <h2 id="compare-title">Site by site</h2>
+      <p class="intro prose" id="compare-intro"></p>
+      <div class="table-wrap" id="site-table"></div>
+      <div class="chart" id="chart" style="margin-top:var(--space-4)"></div>
+    </section>
 
-    <div class="block">
-      <h2>Pages</h2>
+    <section id="only-section" aria-labelledby="only-title" hidden>
+      <h2 id="only-title">Domains found in one file only</h2>
+      <p class="intro prose">These companies showed up in one session but not in the others. They are the clearest sign of what changed.</p>
+      <div class="only" id="only"></div>
+    </section>
+
+    <section aria-labelledby="pages-title">
+      <h2 id="pages-title">Every page</h2>
+      <p class="intro prose">Open a page to see each outside domain and how many requests the page sent to it.</p>
       <div class="tabs" role="tablist" id="tabs" aria-label="Choose a file"></div>
-      <div class="panel" id="pages" role="tabpanel"></div>
-    </div>
-  </section>
+      <div class="pages" id="pages" role="tabpanel"></div>
+    </section>
+  </div>
 
   <footer>
-    Tracker Lens counts registrable domains with a simple built in rule, so a few multi part domain endings may be grouped imperfectly. It measures what your browser contacted, not what those companies did with the data.
+    <p>Tracker Lens groups addresses by their main domain using a short built in list of endings such as co.uk, so a few rare endings may be grouped imperfectly. It shows what your browser contacted, not what those companies did with the data.</p>
   </footer>
 </main>
 
@@ -412,8 +390,7 @@ function analyseHar(har) {
   for (const e of entries) {
     let key = e.pageref && groups.has(e.pageref) ? e.pageref : null;
     if (!key) {
-      // No usable pageref: put everything into one page.
-      key = SINGLE;
+      key = SINGLE;                  // no usable pageref: everything becomes one page
       if (!groups.has(SINGLE)) groups.set(SINGLE, { meta: null, entries: [] });
     }
     groups.get(key).entries.push(e);
@@ -447,26 +424,107 @@ function analyseHar(har) {
 
 function mean(xs) { return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; }
 
+/** Summary numbers for one loaded file. */
+function stats(f) {
+  const counts = f.pages.map(p => p.thirdParties.size);
+  const all = new Map();             // domain -> number of pages it appeared on
+  f.pages.forEach(p => p.thirdParties.forEach((_, d) => all.set(d, (all.get(d) || 0) + 1)));
+  // Per visited site: average count over that site's pages, so files can be matched by site.
+  const bySite = new Map();
+  for (const p of f.pages) {
+    if (!bySite.has(p.domain)) bySite.set(p.domain, []);
+    bySite.get(p.domain).push(p.thirdParties.size);
+  }
+  const sites = new Map([...bySite].map(([s, xs]) => [s, mean(xs)]));
+  return { mean: mean(counts), max: Math.max(...counts), min: Math.min(...counts), pages: f.pages.length, all, sites };
+}
+
 /* ------------------------------------------------------------------
-   3. Reading files without freezing the page
+   3. Findings in plain language
    ------------------------------------------------------------------ */
 
-// JSON.parse of a 50 MB file can block the page for a few seconds. We try to parse in a
-// Web Worker first and fall back to the main thread if workers are not allowed (some
-// browsers block them for files opened from disk).
+const fmt = (x, d = 1) => (Math.round(x * 10 ** d) / 10 ** d).toString();
+const plural = (n, one, many) => `${fmt(n)} ${n === 1 ? one : many}`;
+const who = (f) => `<span class="who"><span class="dot" style="--c:${color(f)}" aria-hidden="true"></span>${esc(f.label)}</span>`;
+const list = (xs) => xs.length <= 1 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
+
+function findings(files) {
+  const out = [];
+  const S = files.map(stats);
+
+  if (files.length === 1) {
+    const f = files[0], s = S[0];
+    out.push({ text: `Across ${plural(s.pages, "page", "pages")}, the browser contacted <b>${s.all.size} different outside domains</b>, ${fmt(s.mean)} per page on average.` });
+    if (s.pages > 1) {
+      const sorted = [...f.pages].sort((a, b) => b.thirdParties.size - a.thirdParties.size);
+      const hi = sorted[0], lo = sorted[sorted.length - 1];
+      out.push({ text: `<b>${esc(hi.domain)}</b> contacted the most outside domains (${hi.thirdParties.size}). <b>${esc(lo.domain)}</b> contacted the fewest (${lo.thirdParties.size}).`,
+                 note: "A higher count means more companies learned about the visit, mostly for advertising and analytics." });
+      const [topD, topN] = [...s.all].sort((a, b) => b[1] - a[1])[0] || [];
+      if (topD && topN > 1) out.push({ text: `<code>${esc(topD)}</code> appeared on ${topN} of ${s.pages} pages, more than any other outside domain.`,
+                                     note: "A domain present on many pages can follow a visitor from site to site." });
+      const none = f.pages.filter(p => p.thirdParties.size === 0).length;
+      if (none) out.push({ text: `${plural(none, "page", "pages")} contacted no outside domain at all.` });
+    }
+    return { items: out, caveat: "Load a second HAR file from another browsing session to compare the two." };
+  }
+
+  // Two or more files: compare every file with the first one.
+  const base = files[0], bs = S[0];
+  for (let i = 1; i < files.length; i++) {
+    const f = files[i], s = S[i];
+    const diff = s.mean - bs.mean;
+    const pct = bs.mean ? Math.round(diff / bs.mean * 100) : null;
+    const dir = Math.abs(diff) < 0.05 ? "the same number of" : `${fmt(Math.abs(diff))} ${diff > 0 ? "more" : "fewer"}`;
+    out.push({ text: `${who(f)} contacted <b>${fmt(s.mean)} outside domains per page</b> on average. That is ${dir} than ${who(base)} (${fmt(bs.mean)})${pct !== null && Math.abs(diff) >= 0.05 ? `, ${pct > 0 ? "+" : ""}${pct}%` : ""}.` });
+
+    // Fair comparison: only sites visited in both files.
+    const shared = [...s.sites.keys()].filter(d => bs.sites.has(d));
+    if (!shared.length) {
+      out.push({ text: `The two files have no website in common.`,
+                 note: "Any difference may come from visiting different websites, not from the browsing session itself. Visit the same sites in both sessions for a fair comparison." });
+    } else {
+      const a = mean(shared.map(d => bs.sites.get(d))), b = mean(shared.map(d => s.sites.get(d)));
+      const changes = shared.map(d => [d, s.sites.get(d) - bs.sites.get(d)]).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
+      const [cd, cv] = changes[0];
+      let t = `On the ${plural(shared.length, "website", "websites")} visited in both, the average went from <b>${fmt(a)} to ${fmt(b)}</b>.`;
+      if (Math.abs(cv) >= 0.5) t += ` The largest change was on <b>${esc(cd)}</b>: ${fmt(bs.sites.get(cd))} in ${esc(base.label)}, ${fmt(s.sites.get(cd))} in ${esc(f.label)}.`;
+      const unshared = s.sites.size - shared.length + bs.sites.size - shared.length;
+      out.push({ text: t, note: unshared ? `${plural(unshared, "website was", "websites were")} visited in only one of the two files and left out of this figure.` : "Both files cover exactly the same websites, so this is a like for like comparison." });
+    }
+
+    const onlyNew = [...s.all.keys()].filter(d => !bs.all.has(d));
+    const onlyOld = [...bs.all.keys()].filter(d => !s.all.has(d));
+    if (onlyNew.length || onlyOld.length) {
+      const ex = (xs) => xs.slice(0, 3).map(d => `<code>${esc(d)}</code>`);
+      const parts = [];
+      if (onlyNew.length) parts.push(`${plural(onlyNew.length, "domain", "domains")} appeared only in ${who(f)}, such as ${list(ex(onlyNew))}`);
+      if (onlyOld.length) parts.push(`${plural(onlyOld.length, "domain", "domains")} appeared only in ${who(base)}${onlyOld.length ? `, such as ${list(ex(onlyOld))}` : ""}`);
+      out.push({ text: parts.join(". ") + "." });
+    } else {
+      out.push({ text: `Both files contacted exactly the same set of outside domains.` });
+    }
+  }
+  return {
+    items: out,
+    caveat: "Each file is one browsing session, so treat these numbers as one observation. Ad and tracking calls vary between visits, so repeat each session a few times before drawing conclusions."
+  };
+}
+
+/* ------------------------------------------------------------------
+   4. Reading files without freezing the page
+   ------------------------------------------------------------------ */
+
+// JSON.parse of a 50 MB file can block the page for a few seconds. We try a Web Worker first
+// and fall back to the main thread if the browser does not allow workers for local files.
 const WORKER_SRC = "self.onmessage = (e) => { try { self.postMessage({ ok: true, data: JSON.parse(e.data) }); } catch (err) { self.postMessage({ ok: false, error: String(err && err.message || err) }); } };";
 
 function parseJson(text) {
   return new Promise((resolve, reject) => {
     let worker;
-    try {
-      worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: "text/javascript" })));
-    } catch (e) {
-      worker = null;
-    }
-    const fallback = () => {
-      setTimeout(() => { try { resolve(JSON.parse(text)); } catch (err) { reject(err); } }, 30);
-    };
+    try { worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: "text/javascript" }))); }
+    catch (e) { worker = null; }
+    const fallback = () => setTimeout(() => { try { resolve(JSON.parse(text)); } catch (err) { reject(err); } }, 30);
     if (!worker) return fallback();
     worker.onmessage = (e) => { worker.terminate(); e.data.ok ? resolve(e.data.data) : reject(new Error(e.data.error)); };
     worker.onerror = (e) => { e.preventDefault(); worker.terminate(); fallback(); };
@@ -484,21 +542,13 @@ function readText(file) {
 }
 
 /* ------------------------------------------------------------------
-   4. App state and rendering
+   5. Rendering
    ------------------------------------------------------------------ */
 
 const state = { files: [], active: 0, nextColor: 0 };
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmt = (x, d = 1) => Number.isInteger(x) ? String(x) : x.toFixed(d);
 const color = (f) => `var(--file-${f.color})`;
-
-function stats(f) {
-  const counts = f.pages.map(p => p.thirdParties.size);
-  const all = new Set();
-  f.pages.forEach(p => p.thirdParties.forEach((_, d) => all.add(d)));
-  return { mean: mean(counts), max: Math.max(...counts), pages: f.pages.length, unique: all };
-}
 
 function status(html, kind = "info", key) {
   const box = $("status");
@@ -518,72 +568,102 @@ function render() {
   $("drop-title").textContent = state.files.length ? "Add more HAR files" : "Drop HAR files here";
   if (!state.files.length) return;
   if (state.active >= state.files.length) state.active = 0;
-  renderCards();
-  renderComparison();
+  renderFiles();
+  renderText();
+}
+
+/** Everything that shows labels; called again when a label is edited. */
+function renderText() {
+  renderFindings();
+  renderCompare();
+  renderOnly();
   renderTabs();
   renderPages();
 }
 
-function renderCards() {
-  $("cards").innerHTML = state.files.map((f, i) => {
+function renderFindings() {
+  const { items, caveat } = findings(state.files);
+  $("findings").innerHTML = items.map(i => `<li>${i.text}${i.note ? `<span class="note">${i.note}</span>` : ""}</li>`).join("");
+  $("caveat").textContent = caveat;
+}
+
+function renderFiles() {
+  $("files").innerHTML = state.files.map((f, i) => {
     const s = stats(f);
-    return `<article class="card" style="--c:${color(f)}" aria-label="${esc(f.label)}">
-      <button type="button" class="remove" data-remove="${i}" aria-label="Remove ${esc(f.label)}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    return `<div class="file-row" style="--c:${color(f)}">
+      <div class="name"><span class="dot" aria-hidden="true"></span>
+        <label class="visually-hidden" for="label-${i}">Name of file ${i + 1}</label>
+        <input id="label-${i}" data-label="${i}" value="${esc(f.label)}" autocomplete="off" spellcheck="false"></div>
+      <div class="big num" aria-label="${fmt(s.mean)} outside domains per page on average">${fmt(s.mean)}</div>
+      <div class="facts">per page on average, over <b class="num">${s.pages}</b> ${s.pages === 1 ? "page" : "pages"}. <b class="num">${s.all.size}</b> different domains in total, at most <b class="num">${s.max}</b> on one page.</div>
+      <button type="button" class="icon-btn" data-remove="${i}" aria-label="Remove ${esc(f.label)}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
-      <label for="label-${i}">Label</label>
-      <input id="label-${i}" data-label="${i}" value="${esc(f.label)}" autocomplete="off" spellcheck="false">
-      <div class="big num">${fmt(s.mean)}</div>
-      <div class="unit">third party domains per page, on average</div>
-      <div class="meta"><span><b class="num">${s.pages}</b> pages</span><span><b class="num">${s.unique.size}</b> distinct domains</span><span>max <b class="num">${s.max}</b></span></div>
-    </article>`;
+    </div>`;
   }).join("");
 }
 
-function renderComparison() {
-  const block = $("compare-block");
-  block.hidden = state.files.length < 2;
-  if (block.hidden) return;
+function renderCompare() {
+  const sec = $("compare");
+  sec.hidden = state.files.length < 2;
+  if (sec.hidden) return;
+  const files = state.files, S = files.map(stats);
+  const sites = new Set();
+  S.forEach(s => s.sites.forEach((_, d) => sites.add(d)));
+  const two = files.length === 2;
+  const rows = [...sites].map(d => {
+    const vals = S.map(s => s.sites.has(d) ? s.sites.get(d) : null);
+    const inAll = vals.every(v => v !== null);
+    const delta = two && inAll ? vals[1] - vals[0] : null;
+    return { d, vals, inAll, delta };
+  }).sort((a, b) => (b.inAll - a.inAll) || (Math.abs(b.delta || 0) - Math.abs(a.delta || 0)) || a.d.localeCompare(b.d));
 
-  // Horizontal bar chart in plain SVG.
+  const shared = rows.filter(r => r.inAll).length;
+  $("compare-intro").textContent = shared
+    ? `Outside domains per page for each website you visited. Websites found in every file come first, because only those can be compared fairly.${two ? " The last column shows the change from the first file to the second." : ""}`
+    : "The files have no website in common, so no website can be compared directly.";
+
+  const head = `<tr><th scope="col">Website</th>${files.map(f => `<th scope="col" class="n">${who(f)}</th>`).join("")}${two ? '<th scope="col" class="n">Change</th>' : ""}</tr>`;
+  const body = rows.map(r => {
+    const cells = r.vals.map(v => `<td class="n">${v === null ? '<span class="muted">not visited</span>' : fmt(v)}</td>`).join("");
+    let change = "";
+    if (two) {
+      if (r.delta === null) change = '<td class="n muted">n/a</td>';
+      else if (Math.abs(r.delta) < 0.05) change = '<td class="n">no change</td>';
+      else change = `<td class="n"><span class="delta ${r.delta > 0 ? "up" : "down"}">${r.delta > 0 ? "+" : "−"}${fmt(Math.abs(r.delta))}</span></td>`;
+    }
+    return `<tr class="${r.inAll ? "" : "unmatched"}"><td class="site">${esc(r.d)}</td>${cells}${change}</tr>`;
+  }).join("");
+  $("site-table").innerHTML = `<table><caption class="visually-hidden">Outside domains per page, by website and file</caption><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  renderChart();
+}
+
+function renderChart() {
   const files = state.files.map(f => ({ f, s: stats(f) }));
-  const maxV = Math.max(1, ...files.map(x => x.s.mean));
-  // The chart is drawn at the panel's real width so text stays readable on phones.
-  const W = Math.max(300, Math.round($("chart").clientWidth - 44) || 760);
-  const labelW = Math.min(170, Math.round(W * 0.3)), valueW = 56, rowH = 46, top = 8;
-  const H = top + rowH * files.length + 26;
+  // Drawn at the real width so text stays readable on phones.
+  const W = Math.max(300, Math.round($("chart").clientWidth) || 760);
+  const labelW = Math.min(170, Math.round(W * 0.32)), valueW = 56, rowH = 48, top = 6;
+  const H = top + rowH * files.length + 28;
   const barW = W - labelW - valueW;
+  const maxV = Math.max(1, ...files.map(x => x.s.mean));
   const ticks = niceTicks(maxV);
   const scale = barW / ticks[ticks.length - 1];
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="chart-title chart-desc">
-    <title id="chart-title">Average third party domains per page</title>
+    <title id="chart-title">Average outside domains per page, all pages</title>
     <desc id="chart-desc">${files.map(x => `${esc(x.f.label)}: ${fmt(x.s.mean)}`).join(", ")}</desc>`;
   for (const t of ticks) {
     const x = labelW + t * scale;
-    svg += `<line class="grid" x1="${x}" x2="${x}" y1="${top - 4}" y2="${H - 22}"/>`;
-    svg += `<text class="axis" x="${x}" y="${H - 6}" text-anchor="middle">${t}</text>`;
+    svg += `<line class="grid" x1="${x}" x2="${x}" y1="${top}" y2="${H - 24}"/><text class="axis" x="${x}" y="${H - 6}" text-anchor="middle">${t}</text>`;
   }
   files.forEach((x, i) => {
-    const y = top + i * rowH;
-    const w = Math.max(2, x.s.mean * scale);
-    const maxChars = Math.max(6, Math.floor(labelW / 8.5));
+    const y = top + i * rowH, w = Math.max(2, x.s.mean * scale);
+    const maxChars = Math.max(6, Math.floor(labelW / 9));
     const name = x.f.label.length > maxChars ? x.f.label.slice(0, maxChars - 1) + "…" : x.f.label;
     svg += `<text x="${labelW - 12}" y="${y + rowH / 2 + 5}" text-anchor="end">${esc(name)}</text>`;
-    svg += `<rect class="bar" x="${labelW}" y="${y + 9}" width="${w}" height="${rowH - 18}" rx="7" fill="${color(x.f)}"/>`;
+    svg += `<rect x="${labelW}" y="${y + 10}" width="${w}" height="${rowH - 20}" rx="6" fill="${color(x.f)}"/>`;
     svg += `<text class="value" x="${labelW + w + 8}" y="${y + rowH / 2 + 5}">${fmt(x.s.mean)}</text>`;
   });
-  $("chart").innerHTML = `<h3 style="margin-bottom:12px">Average third party domains per page</h3>` + svg + "</svg>";
-
-  // Domains seen in only one file.
-  $("diff").innerHTML = files.map((x, i) => {
-    const others = new Set();
-    files.forEach((y, j) => { if (j !== i) y.s.unique.forEach(d => others.add(d)); });
-    const only = [...x.s.unique].filter(d => !others.has(d)).sort();
-    const chips = only.length ? only.slice(0, 60).map(d => `<span class="chip">${esc(d)}</span>`).join("") +
-      (only.length > 60 ? `<span class="chip">+${only.length - 60} more</span>` : "")
-      : `<span class="muted">None. Every domain here also appears in another file.</span>`;
-    return `<div class="panel"><h3><span class="badge" style="--c:${color(x.f)}">${esc(x.f.label)}</span> only: <span class="num">${only.length}</span> domains</h3><div class="chips">${chips}</div></div>`;
-  }).join("");
+  $("chart").innerHTML = `<h3 style="margin-bottom:12px">Average over all pages in each file</h3>` + svg + "</svg>";
 }
 
 function niceTicks(max) {
@@ -592,6 +672,22 @@ function niceTicks(max) {
   const ticks = [];
   for (let t = 0; t <= max + step * 0.999; t += step) ticks.push(+t.toFixed(6));
   return ticks;
+}
+
+function renderOnly() {
+  const sec = $("only-section");
+  sec.hidden = state.files.length < 2;
+  if (sec.hidden) return;
+  const S = state.files.map(stats);
+  $("only").innerHTML = state.files.map((f, i) => {
+    const others = new Set();
+    S.forEach((s, j) => { if (j !== i) s.all.forEach((_, d) => others.add(d)); });
+    const only = [...S[i].all.keys()].filter(d => !others.has(d)).sort();
+    const chips = only.length
+      ? only.slice(0, 60).map(d => `<span class="chip">${esc(d)}</span>`).join("") + (only.length > 60 ? `<span class="chip">and ${only.length - 60} more</span>` : "")
+      : `<p class="muted">None. Every domain here also appears in another file.</p>`;
+    return `<div><h3>${who(f)}<span class="muted num" style="font-weight:400">${only.length} only here</span></h3><div class="chips">${chips}</div></div>`;
+  }).join("");
 }
 
 function renderTabs() {
@@ -605,33 +701,31 @@ function renderPages() {
   const f = state.files[state.active];
   const pages = [...f.pages].sort((a, b) => b.thirdParties.size - a.thirdParties.size);
   $("pages").innerHTML = pages.map(p => {
-    const list = [...p.thirdParties.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-    const top = list.length ? list[0][1] : 1;
-    const rows = list.map(([d, n]) => `<li><span class="d" title="${esc(d)}">${esc(d)}</span>
+    const items = [...p.thirdParties.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const top = items.length ? items[0][1] : 1;
+    const rows = items.map(([d, n]) => `<li><span class="d" title="${esc(d)}">${esc(d)}</span>
       <span class="track" aria-hidden="true"><span class="fill" style="width:${(n / top * 100).toFixed(1)}%"></span></span>
-      <span class="n">${n}</span></li>`).join("");
+      <span class="n" aria-label="${n} requests">${n}</span></li>`).join("");
     return `<details class="page" style="--c:${color(f)}">
       <summary>
         <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
         <span class="title"><b>${esc(p.domain)}</b><span>${esc(p.url)}</span></span>
-        <span class="stat"><b>${p.thirdParties.size}</b>domains</span>
+        <span class="stat"><b>${p.thirdParties.size}</b>outside domains</span>
         <span class="stat req"><b>${p.requests}</b>requests</span>
       </summary>
-      ${list.length ? `<ul class="domains" aria-label="Third party domains on ${esc(p.domain)}">${rows}</ul>` : `<p class="muted" style="padding:0 0 14px 34px">No third party requests on this page.</p>`}
+      ${items.length ? `<ul class="domains" aria-label="Outside domains on ${esc(p.domain)}">${rows}</ul>` : `<p class="empty-note">This page contacted no outside domain.</p>`}
     </details>`;
   }).join("");
 }
 
 /* ------------------------------------------------------------------
-   5. Loading files
+   6. Loading files
    ------------------------------------------------------------------ */
 
 async function addFiles(fileList) {
-  const files = [...fileList];
-  for (const file of files) {
+  for (const file of [...fileList]) {
     const key = "f" + Math.random().toString(36).slice(2);
-    const mb = (file.size / 1048576).toFixed(1);
-    status(`Reading <b>${esc(file.name)}</b> (${mb} MB)…`, "busy", key);
+    status(`Reading <b>${esc(file.name)}</b> (${(file.size / 1048576).toFixed(1)} MB)…`, "busy", key);
     try {
       const text = await readText(file);
       status(`Analysing <b>${esc(file.name)}</b>…`, "busy", key);
@@ -648,11 +742,7 @@ async function addFiles(fileList) {
 
 function addParsed(name, har) {
   const pages = analyseHar(har);
-  state.files.push({
-    label: name.replace(/\.har$/i, ""),
-    pages,
-    color: state.nextColor++ % MAX_FILE_COLORS,
-  });
+  state.files.push({ label: name.replace(/\.har$/i, ""), pages, color: state.nextColor++ % MAX_FILE_COLORS });
   state.active = state.files.length - 1;
   render();
 }
@@ -661,9 +751,8 @@ function downloadCsv() {
   const q = (v) => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
   const lines = ["file_label,page_url,third_party_domains,third_party_requests"];
   for (const f of state.files) for (const p of f.pages) lines.push([f.label, p.url, p.thirdParties.size, p.requests].map(q).join(","));
-  const blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
   a.download = "tracker-lens.csv";
   document.body.appendChild(a);
   a.click();
@@ -696,7 +785,7 @@ function loadExamples() {
 }
 
 /* ------------------------------------------------------------------
-   6. Wiring up the interface
+   7. Wiring up the interface
    ------------------------------------------------------------------ */
 
 const dz = $("dropzone"), input = $("file-input");
@@ -705,16 +794,15 @@ dz.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") 
 input.addEventListener("change", () => { addFiles(input.files); input.value = ""; });
 ["dragenter", "dragover"].forEach(t => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.add("dragover"); }));
 ["dragleave", "drop"].forEach(t => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.remove("dragover"); }));
-dz.addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
-// Dropping a file anywhere else should not make the browser navigate away.
+// Dropping a file anywhere on the page works too, and never navigates away.
 window.addEventListener("dragover", (e) => e.preventDefault());
-window.addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+window.addEventListener("drop", (e) => { e.preventDefault(); dz.classList.remove("dragover"); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
 
 $("load-examples").addEventListener("click", loadExamples);
 $("download-csv").addEventListener("click", downloadCsv);
 $("clear-all").addEventListener("click", () => { state.files = []; state.nextColor = 0; render(); status("All files removed.", "done"); dz.focus(); });
 
-$("cards").addEventListener("click", (e) => {
+$("files").addEventListener("click", (e) => {
   const b = e.target.closest("[data-remove]");
   if (!b) return;
   const [gone] = state.files.splice(+b.dataset.remove, 1);
@@ -722,11 +810,11 @@ $("cards").addEventListener("click", (e) => {
   status(`Removed ${esc(gone.label)}.`, "done");
   if (!state.files.length) dz.focus();
 });
-$("cards").addEventListener("input", (e) => {
+$("files").addEventListener("input", (e) => {
   const i = e.target.dataset.label;
   if (i === undefined) return;
   state.files[+i].label = e.target.value.trim() || "untitled";
-  renderComparison(); renderTabs();   // cards keep focus because they are not re-rendered
+  renderText();                     // the file rows keep focus because they are not redrawn
 });
 $("tabs").addEventListener("click", (e) => {
   const b = e.target.closest("[data-tab]");
@@ -739,16 +827,14 @@ $("tabs").addEventListener("keydown", (e) => {
   state.active = (state.active + (e.key === "ArrowRight" ? 1 : n - 1)) % n;
   renderTabs(); renderPages(); $(`tab-${state.active}`).focus();
 });
-
-// Redraw the chart when the window size changes.
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (state.files.length > 1) renderComparison(); }, 150);
+  resizeTimer = setTimeout(() => { if (state.files.length > 1) renderChart(); }, 150);
 });
 
 // Exposed for tests in the browser console.
-window.TrackerLens = { registrableDomain, domainOf, analyseHar };
+window.TrackerLens = { registrableDomain, domainOf, analyseHar, findings, stats };
 </script>
 </body>
 </html>

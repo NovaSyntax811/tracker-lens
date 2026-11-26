@@ -24,10 +24,14 @@ No HAR file at hand? Click **Load example files**, or drop the two files from `e
 
 ## What you get
 
-- A card per file with the average number of third party domains per page
-- A bar chart and a list of domains seen in only one file, when two or more files are loaded
-- Every page with its third party domains and request counts
-- A CSV export with one row per page:
+- **What the files show:** the results in plain sentences. With two files, the second is compared
+  with the first: overall, on the websites both files share, and by domains found in only one.
+- **Outside domains per page:** the average per file, with page count and total domains.
+- **Site by site:** a table matching the websites across files, with the change per website. Only
+  websites found in every file can be compared fairly, so they come first.
+- **Domains found in one file only:** the clearest sign of what changed between sessions.
+- **Every page:** each page with its outside domains and request counts.
+- **CSV export** with one row per page:
   `file_label, page_url, third_party_domains, third_party_requests`
 
 ## How the metric is computed
