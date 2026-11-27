@@ -24,15 +24,20 @@ No HAR file at hand? Click **Load example files**, or drop the two files from `e
 
 ## What you get
 
-- **What the files show:** the results in plain sentences. With two files, the second is compared
-  with the first: overall, on the websites both files share, and by domains found in only one.
-- **Outside domains per page:** the average per file, with page count and total domains.
-- **Site by site:** a table matching the websites across files, with the change per website. Only
-  websites found in every file can be compared fairly, so they come first.
-- **Domains found in one file only:** the clearest sign of what changed between sessions.
-- **Every page:** each page with its outside domains and request counts.
+- **What the files show:** the results in plain sentences. The first file is the baseline; any
+  other file is compared with it (use **Make baseline** to switch). Websites found in only one file
+  are recognised as noise, their share of all visits is reported, and they are left out of the
+  comparison.
+- **Outside domains per page:** the average per file, plus recording time, browser, original file
+  name and the websites in visit order, so files are easy to tell apart.
+- **Site by site:** websites found in every file are compared, with the change per website. Noise
+  websites are listed separately below.
+- **What changed on the compared websites:** outside domains that are new or gone on those
+  websites. Domains that only the noise websites contacted are kept apart.
+- **Every page:** each page in visit order with its outside domains and request counts. Noise
+  websites are labelled.
 - **CSV export** with one row per page:
-  `file_label, page_url, third_party_domains, third_party_requests`
+  `file_label, is_baseline, page_url, site, compared, third_party_domains, third_party_requests`
 
 ## How the metric is computed
 

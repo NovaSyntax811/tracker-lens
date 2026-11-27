@@ -130,6 +130,7 @@ body.has-results .dropzone .title { font-size: 17px; }
 .findings li { padding: var(--space-2) 0; border-top: 1px solid var(--line); font-size: 18px; }
 .findings li:last-child { border-bottom: 1px solid var(--line); }
 .findings b { font-weight: 650; }
+.findings .link-btn { font-size: 16px; padding: 0; min-height: 0; }
 .findings .note { display: block; font-size: 16px; color: var(--muted); margin-top: 4px; }
 .caveat { margin-top: var(--space-2); color: var(--muted); max-width: 72ch; }
 
@@ -144,7 +145,7 @@ body.has-results .dropzone .title { font-size: 17px; }
 }
 .file-row .name { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .file-row input {
-  width: 100%; min-width: 0; font: inherit; font-weight: 650; font-size: 18px; color: var(--text);
+  flex: 1 1 auto; width: auto; min-width: 0; font: inherit; font-weight: 650; font-size: 18px; color: var(--text);
   background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; margin-left: -8px;
 }
 .file-row input:hover { border-color: var(--line); }
@@ -154,6 +155,23 @@ body.has-results .dropzone .title { font-size: 17px; }
 .file-row .facts b { color: var(--text); font-weight: 600; }
 .icon-btn { border: 0; background: transparent; color: var(--muted); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
 .icon-btn:hover { background: var(--surface); color: var(--text); }
+
+.file-meta { grid-column: 1 / -1; margin-top: -6px; font-size: 15px; color: var(--muted); }
+.file-meta .mono { font-size: 14px; }
+.tag { display: inline-block; font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface); color: var(--muted); white-space: nowrap; vertical-align: 2px; }
+.link-btn { font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: none; border: 0; padding: 8px 4px; min-height: 40px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.link-btn:hover { color: var(--muted); }
+tr.group th { padding-top: var(--space-3); font-size: 14px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); }
+tbody:first-of-type tr.group th { padding-top: 12px; }
+tbody.unmatched td { color: var(--muted); }
+.change-block + .change-block { margin-top: var(--space-4); }
+.change-block .pair { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.change-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); }
+.change-cols h4 { font-size: 17px; margin: 0 0 10px; }
+.change-cols h4 .sub { display: block; font-size: 15px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.noise-box { margin-top: var(--space-3); color: var(--muted); }
+.noise-box summary { cursor: pointer; padding: 8px 0; min-height: 40px; }
+.noise-box .chips { margin-top: 8px; }
 
 /* Chart */
 .chart svg { display: block; width: 100%; height: auto; }
@@ -176,7 +194,7 @@ tr.unmatched td { color: var(--muted); }
 .delta.down { color: var(--ok); }
 
 /* Domains only in one file */
-.only { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-3) var(--space-4); }
+.only { display: block; }
 .only h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 17px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 4px 8px; border-radius: 6px; background: var(--surface); }
@@ -268,6 +286,8 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
   .file-row .facts { grid-column: 1 / -1; }
   .file-row .big { grid-row: 1; grid-column: 2; }
   .file-row .icon-btn { display: none; }
+  .file-meta { margin-top: 0; }
+  .change-cols { grid-template-columns: 1fr; }
   details.page summary { grid-template-columns: 16px 1fr auto; }
   details.page summary .stat.req { display: none; }
   .domains { padding-left: 0; }
@@ -341,7 +361,7 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
 
     <section aria-labelledby="files-title">
       <h2 id="files-title">Outside domains per page</h2>
-      <p class="intro prose">An outside domain is any website other than the one you opened, for example <code>doubleclick.net</code> on a news site. Each one learned that this page was visited. The large number is the average per page. Click a name to rename it.</p>
+      <p class="intro prose">An outside domain is any website other than the one you opened, for example <code>doubleclick.net</code> on a news site. Each one learned that this page was visited. The large number is the average per page, over all pages of the file. Click a name to rename it. The first file is the baseline that the others are compared with.</p>
       <div class="files" id="files"></div>
       <div class="toolbar">
         <button type="button" class="btn secondary" id="download-csv">
@@ -360,8 +380,8 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
     </section>
 
     <section id="only-section" aria-labelledby="only-title" hidden>
-      <h2 id="only-title">Domains found in one file only</h2>
-      <p class="intro prose">These companies showed up in one session but not in the others. They are the clearest sign of what changed.</p>
+      <h2 id="only-title">What changed on the compared websites</h2>
+      <p class="intro prose">Outside domains on the websites found in every file. “New” means a company was contacted only in the other file, “gone” means it was contacted only in the baseline. Domains that came from noise websites are kept apart.</p>
       <div class="only" id="only"></div>
     </section>
 
@@ -514,17 +534,17 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
         <h3 id="x-read">Reading the results</h3>
         <dl class="defs">
           <dt>What the files show</dt>
-          <dd>The main results in plain sentences. With two or more files, every file is compared with the first one you loaded, so load your baseline first.</dd>
+          <dd>The main results in plain sentences. With two or more files, the first file is the <b>baseline</b> and every other file is compared with it. Use <b>Make baseline</b> next to a file to change which one that is. The first sentence names the websites that appear in only one file and treats them as noise.</dd>
           <dt>Outside domains per page</dt>
-          <dd>One row per file. The large number is the average count of outside domains per page. The row also shows how many pages the file has, how many different outside domains appeared in total, and the highest count on a single page. Click a name to rename the file.</dd>
+          <dd>One row per file. The large number is the average count of outside domains per page, over all pages including noise. Below it you see when and in which browser the file was recorded, its original file name, and the websites in the order you visited them. This is how you tell your files apart. Click a name to rename the file.</dd>
           <dt>Site by site</dt>
-          <dd>Every website from every file, with its count in each file and the change between them. Websites found in all files come first, because only those can be compared fairly. A website you opened several times shows the average of those visits. The bar chart below shows the plain average over all pages of each file.</dd>
-          <dt>Domains found in one file only</dt>
-          <dd>Outside domains that appeared in one session and not in the others. This is usually the clearest sign of what your change did, for example the ad companies that disappear when you reject cookies.</dd>
+          <dd>Every website from every file, in two groups. <b>Compared</b> lists the websites found in every file, with the change from the baseline. Below it, websites found in only one file are listed per file and marked as noise or not compared. A website you opened several times shows the average of those visits. The bar chart below shows the plain average over all pages, noise included, so use the table for the fair comparison.</dd>
+          <dt>What changed on the compared websites</dt>
+          <dd>Which outside domains are <b>new</b> or <b>gone</b> on the websites found in every file. This is usually the clearest sign of what your change did. Domains that only the noise websites contacted are listed separately, folded away.</dd>
           <dt>Every page</dt>
-          <dd>Every page of a file, sorted by its count. Open a page to see each outside domain with its number of requests, longest bar first.</dd>
+          <dd>Every page of a file, in the order you visited them. Noise websites carry a <b>noise website</b> label. Open a page to see each outside domain with its number of requests, longest bar first.</dd>
           <dt>CSV export</dt>
-          <dd>One row per page with the columns <code>file_label</code>, <code>page_url</code>, <code>third_party_domains</code> and <code>third_party_requests</code>, ready for a spreadsheet or statistics software.</dd>
+          <dd>One row per page with the columns <code>file_label</code>, <code>is_baseline</code>, <code>page_url</code>, <code>site</code>, <code>compared</code> (whether the website is in every file), <code>third_party_domains</code> and <code>third_party_requests</code>, ready for a spreadsheet or statistics software.</dd>
         </dl>
 
         <h3 id="x-compare">Designing a comparison</h3>
@@ -553,9 +573,10 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
           <li><b>Pick your noise sites</b> from other topics, for example two cooking, two travel and two sports sites.</li>
           <li><b>Record without noise.</b> In a fresh private window, visit only the topic sites. Save the file as <code>no-noise.har</code>.</li>
           <li><b>Record with noise.</b> In a new fresh private window, visit the same topic sites in the same order, with noise sites in between. Save it as <code>noise.har</code>.</li>
-          <li><b>Load both files</b>, the file without noise first.</li>
+          <li><b>Load both files.</b> The first file becomes the baseline. If you loaded them the other way round, click <b>Make baseline</b> next to the file without noise.</li>
         </ol>
-        <p>Tracker Lens compares only websites found in both files. The noise sites appear in one file only, so they are left out of the comparison automatically. What you see is how the topic sites behaved with and without noise around them.</p>
+        <p>Tracker Lens compares only websites found in both files. The noise sites appear in one file only, so Tracker Lens recognises them as noise, reports their share of all visits, and leaves them out of the comparison. What you see is how the topic sites behaved with and without noise around them.</p>
+        <p>To tell your files apart later, give them clear names before exporting, such as <code>cars-no-noise.har</code> and <code>cars-noise-30.har</code>. Tracker Lens also shows each file's recording time, browser and visited websites.</p>
 
         <h4>Setting the amount of noise</h4>
         <p>The amount of noise is the share of noise visits among all visits. You set it by how many noise sites you visit per topic site.</p>
@@ -587,8 +608,9 @@ footer { margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1p
 
         <h4>What to look for</h4>
         <ul>
-          <li><b>Site by site:</b> did the topic sites contact more, fewer or other companies when noise was present?</li>
-          <li><b>Domains found in one file only:</b> which companies appeared only with noise? Many of them come from the noise sites themselves; check the page list to see where each one was contacted.</li>
+          <li><b>The first finding:</b> check that the websites named as noise really are your noise sites, and that the noise share matches what you planned.</li>
+          <li><b>Site by site:</b> did the topic sites contact more or fewer companies when noise was present?</li>
+          <li><b>What changed on the compared websites:</b> which companies are new or gone on the topic sites when noise was present? Domains that only the noise sites contacted are listed apart from these.</li>
           <li><b>Repeats:</b> record each setup at least three times. Any effect of noise may be small, and ad activity varies a lot between visits.</li>
         </ul>
         <p>Tracker Lens shows <em>who</em> was contacted, not <em>what they concluded</em>. If the same companies are contacted with and without noise, they may still have built a different picture of you. Measuring that needs the ad prices or interest labels companies attach to a browser, which a HAR file usually does not contain.</p>
@@ -724,10 +746,29 @@ function analyseHar(har) {
       thirdParties.set(d, (thirdParties.get(d) || 0) + 1);
       requests++;
     }
-    pages.push({ id, title: metaTitle && metaTitle !== url ? metaTitle : "", url, domain: pageDomain, thirdParties, requests });
+    const started = toTime(g.meta && g.meta.startedDateTime) ?? toTime(g.entries[0].startedDateTime);
+    pages.push({ id, title: metaTitle && metaTitle !== url ? metaTitle : "", url, domain: pageDomain, thirdParties, requests, started });
   }
   if (!pages.length) throw new Error("No web pages were found in this HAR file.");
+  // Keep the order in which the pages were visited.
+  pages.sort((a, b) => (a.started ?? 0) - (b.started ?? 0));
   return pages;
+}
+
+function toTime(iso) {
+  const t = iso ? Date.parse(iso) : NaN;
+  return Number.isNaN(t) ? null : t;
+}
+
+/** When and with which browser a HAR file was recorded. */
+function harInfo(har) {
+  const times = har.log.entries.map(e => toTime(e.startedDateTime)).filter(t => t !== null);
+  const b = har.log.browser || har.log.creator || {};
+  return {
+    start: times.length ? Math.min(...times) : null,
+    end: times.length ? Math.max(...times) : null,
+    browser: [b.name, b.version && String(b.version).split(".")[0]].filter(Boolean).join(" "),
+  };
 }
 
 function mean(xs) { return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; }
@@ -744,7 +785,41 @@ function stats(f) {
     bySite.get(p.domain).push(p.thirdParties.size);
   }
   const sites = new Map([...bySite].map(([s, xs]) => [s, mean(xs)]));
-  return { mean: mean(counts), max: Math.max(...counts), min: Math.min(...counts), pages: f.pages.length, all, sites };
+  const siteOrder = [...new Set(f.pages.map(p => p.domain))];
+  return { mean: mean(counts), max: Math.max(...counts), pages: f.pages.length, all, sites, siteOrder };
+}
+
+/** Outside domains contacted on the given websites only. */
+function domainsOn(f, siteSet) {
+  const out = new Set();
+  f.pages.forEach(p => { if (siteSet.has(p.domain)) p.thirdParties.forEach((_, d) => out.add(d)); });
+  return out;
+}
+
+/**
+ * Compare one file with the baseline. Websites in both files are compared.
+ * Websites only in the other file are treated as noise and kept apart.
+ */
+function compare(base, f) {
+  const bs = stats(base), s = stats(f);
+  const shared = s.siteOrder.filter(d => bs.sites.has(d));
+  const extra = s.siteOrder.filter(d => !bs.sites.has(d));        // likely noise sites
+  const missing = bs.siteOrder.filter(d => !s.sites.has(d));
+  const sharedSet = new Set(shared), extraSet = new Set(extra);
+  const noiseVisits = f.pages.filter(p => extraSet.has(p.domain)).length;
+  const onSharedBase = domainsOn(base, sharedSet), onSharedF = domainsOn(f, sharedSet);
+  const appeared = [...onSharedF].filter(d => !onSharedBase.has(d)).sort();
+  const disappeared = [...onSharedBase].filter(d => !onSharedF.has(d)).sort();
+  const fromNoise = [...domainsOn(f, extraSet)].filter(d => !onSharedF.has(d) && !bs.all.has(d)).sort();
+  const changes = shared.map(d => ({ site: d, before: bs.sites.get(d), after: s.sites.get(d), delta: s.sites.get(d) - bs.sites.get(d) }))
+                        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  return {
+    shared, extra, missing, noiseVisits,
+    noiseShare: f.pages.length ? noiseVisits / f.pages.length : 0,
+    before: mean(shared.map(d => bs.sites.get(d))),
+    after: mean(shared.map(d => s.sites.get(d))),
+    changes, appeared, disappeared, fromNoise,
+  };
 }
 
 /* ------------------------------------------------------------------
@@ -755,13 +830,18 @@ const fmt = (x, d = 1) => (Math.round(x * 10 ** d) / 10 ** d).toString();
 const plural = (n, one, many) => `${fmt(n)} ${n === 1 ? one : many}`;
 const who = (f) => `<span class="who"><span class="dot" style="--c:${color(f)}" aria-hidden="true"></span>${esc(f.label)}</span>`;
 const list = (xs) => xs.length <= 1 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
+const codes = (xs, n = 3) => {
+  const shown = xs.slice(0, n).map(d => `<code>${esc(d)}</code>`);
+  return xs.length > n ? `${shown.join(", ")} and ${xs.length - n} more` : list(shown);
+};
+const pct = (x) => `${Math.round(x * 100)}%`;
+const signed = (x) => `${x > 0 ? "+" : x < 0 ? "−" : ""}${fmt(Math.abs(x))}`;
 
 function findings(files) {
   const out = [];
-  const S = files.map(stats);
 
   if (files.length === 1) {
-    const f = files[0], s = S[0];
+    const f = files[0], s = stats(f);
     out.push({ text: `Across ${plural(s.pages, "page", "pages")}, the browser contacted <b>${s.all.size} different outside domains</b>, ${fmt(s.mean)} per page on average.` });
     if (s.pages > 1) {
       const sorted = [...f.pages].sort((a, b) => b.thirdParties.size - a.thirdParties.size);
@@ -777,40 +857,54 @@ function findings(files) {
     return { items: out, caveat: "Load a second HAR file from another browsing session to compare the two." };
   }
 
-  // Two or more files: compare every file with the first one.
-  const base = files[0], bs = S[0];
+  const base = files[0];
   for (let i = 1; i < files.length; i++) {
-    const f = files[i], s = S[i];
-    const diff = s.mean - bs.mean;
-    const pct = bs.mean ? Math.round(diff / bs.mean * 100) : null;
-    const dir = Math.abs(diff) < 0.05 ? "the same number of" : `${fmt(Math.abs(diff))} ${diff > 0 ? "more" : "fewer"}`;
-    out.push({ text: `${who(f)} contacted <b>${fmt(s.mean)} outside domains per page</b> on average. That is ${dir} than ${who(base)} (${fmt(bs.mean)})${pct !== null && Math.abs(diff) >= 0.05 ? `, ${pct > 0 ? "+" : ""}${pct}%` : ""}.` });
+    const f = files[i], c = compare(base, f);
 
-    // Fair comparison: only sites visited in both files.
-    const shared = [...s.sites.keys()].filter(d => bs.sites.has(d));
-    if (!shared.length) {
-      out.push({ text: `The two files have no website in common.`,
-                 note: "Any difference may come from visiting different websites, not from the browsing session itself. Visit the same sites in both sessions for a fair comparison." });
+    // 1. Which websites are compared and which are noise.
+    if (!c.extra.length && c.missing.length) {
+      // The baseline has websites the other file lacks: the files are probably the wrong way round.
+      out.push({ text: `<b>The files look the wrong way round.</b> ${who(base)} is the baseline, but it is the one with extra websites: ${codes(c.missing, 4)}. These are probably your noise websites, so ${who(f)} should be the baseline. <button type="button" class="link-btn" data-baseline="${i}">Make ${esc(f.label)} the baseline</button>`,
+                 note: "The baseline is the file without noise. Every other file is compared with it." });
+    } else if (!c.extra.length && !c.missing.length) {
+      out.push({ text: `${who(base)} and ${who(f)} visited the same ${plural(c.shared.length, "website", "websites")}, so no noise websites were found.`,
+                 note: "If you added noise to one of the files, it did not include any website that is missing from the other file." });
     } else {
-      const a = mean(shared.map(d => bs.sites.get(d))), b = mean(shared.map(d => s.sites.get(d)));
-      const changes = shared.map(d => [d, s.sites.get(d) - bs.sites.get(d)]).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]));
-      const [cd, cv] = changes[0];
-      let t = `On the ${plural(shared.length, "website", "websites")} visited in both, the average went from <b>${fmt(a)} to ${fmt(b)}</b>.`;
-      if (Math.abs(cv) >= 0.5) t += ` The largest change was on <b>${esc(cd)}</b>: ${fmt(bs.sites.get(cd))} in ${esc(base.label)}, ${fmt(s.sites.get(cd))} in ${esc(f.label)}.`;
-      const unshared = s.sites.size - shared.length + bs.sites.size - shared.length;
-      out.push({ text: t, note: unshared ? `${plural(unshared, "website was", "websites were")} visited in only one of the two files and left out of this figure.` : "Both files cover exactly the same websites, so this is a like for like comparison." });
+      let t = "";
+      if (c.extra.length) t += `${who(f)} visited ${plural(c.extra.length, "website", "websites")} that ${who(base)} did not: ${codes(c.extra, 4)}. These ${plural(c.noiseVisits, "visit", "visits")}, <b>${pct(c.noiseShare)} of all visits</b> in ${esc(f.label)}, are treated as <b>noise</b> and left out of the comparison.`;
+      if (c.missing.length) t += `${t ? " " : ""}${plural(c.missing.length, "website", "websites")} from ${esc(base.label)} ${c.missing.length === 1 ? "is" : "are"} missing in ${esc(f.label)} and also left out: ${codes(c.missing, 3)}.`;
+      out.push({ text: t, note: `${esc(base.label)} is the baseline, the file without noise. If these are not your noise websites, use “Make baseline” on the other file.` });
     }
 
-    const onlyNew = [...s.all.keys()].filter(d => !bs.all.has(d));
-    const onlyOld = [...bs.all.keys()].filter(d => !s.all.has(d));
-    if (onlyNew.length || onlyOld.length) {
-      const ex = (xs) => xs.slice(0, 3).map(d => `<code>${esc(d)}</code>`);
+    if (!c.shared.length) {
+      out.push({ text: `The two files have no website in common, so nothing can be compared.`,
+                 note: "Visit the same topic websites in both sessions, and add the noise websites in only one of them." });
+      continue;
+    }
+
+    // 2. The comparison on websites found in both files.
+    const diff = c.after - c.before;
+    const rel = c.before ? Math.round(diff / c.before * 100) : null;
+    const how = Math.abs(diff) < 0.05 ? "the same as" : `${fmt(Math.abs(diff))} ${diff > 0 ? "more" : "fewer"} than`;
+    let t = `On the ${plural(c.shared.length, "website", "websites")} in both files, ${who(f)} contacted <b>${fmt(c.after)} outside domains per page</b>. That is ${how} ${who(base)} (${fmt(c.before)})${rel !== null && Math.abs(diff) >= 0.05 ? `, ${rel > 0 ? "+" : rel < 0 ? "−" : ""}${Math.abs(rel)}%` : ""}.`;
+    const big = c.changes[0];
+    if (big && Math.abs(big.delta) >= 0.5) t += ` The largest change was on <b>${esc(big.site)}</b>: from ${fmt(big.before)} to ${fmt(big.after)}.`;
+    out.push({ text: t, note: "This is the fair comparison: same websites, with and without the change." });
+
+    // 3. Which companies came and went on those websites.
+    if (c.appeared.length || c.disappeared.length) {
       const parts = [];
-      if (onlyNew.length) parts.push(`${plural(onlyNew.length, "domain", "domains")} appeared only in ${who(f)}, such as ${list(ex(onlyNew))}`);
-      if (onlyOld.length) parts.push(`${plural(onlyOld.length, "domain", "domains")} appeared only in ${who(base)}${onlyOld.length ? `, such as ${list(ex(onlyOld))}` : ""}`);
-      out.push({ text: parts.join(". ") + "." });
+      if (c.appeared.length) parts.push(`${plural(c.appeared.length, "outside domain", "outside domains")} appeared only with ${who(f)}, such as ${codes(c.appeared)}`);
+      if (c.disappeared.length) parts.push(`${plural(c.disappeared.length, "outside domain", "outside domains")} from ${who(base)} did not appear, such as ${codes(c.disappeared)}`);
+      out.push({ text: `On those same websites, ${parts.join(". ")}.` });
     } else {
-      out.push({ text: `Both files contacted exactly the same set of outside domains.` });
+      out.push({ text: `On those same websites, exactly the same outside domains were contacted in both files.` });
+    }
+
+    // 4. What the noise websites brought along.
+    if (c.fromNoise.length) {
+      out.push({ text: `The noise websites contacted ${plural(c.fromNoise.length, "further outside domain", "further outside domains")} that appear nowhere else, such as ${codes(c.fromNoise)}.`,
+                 note: "These come from the noise websites themselves and are not part of the comparison." });
     }
   }
   return {
@@ -884,7 +978,7 @@ function render() {
 function renderText() {
   renderFindings();
   renderCompare();
-  renderOnly();
+  renderChanges();
   renderTabs();
   renderPages();
 }
@@ -895,18 +989,34 @@ function renderFindings() {
   $("caveat").textContent = caveat;
 }
 
+function when(f) {
+  if (f.info.start === null) return "Recording time unknown";
+  const d = new Date(f.info.start), e = new Date(f.info.end);
+  const day = d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  const t = (x) => x.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  const sameDay = d.toDateString() === e.toDateString();
+  return `Recorded ${day}, ${t(d)} to ${sameDay ? t(e) : e.toLocaleDateString(undefined, { day: "numeric", month: "short" }) + " " + t(e)}`;
+}
+
 function renderFiles() {
+  const multi = state.files.length > 1;
   $("files").innerHTML = state.files.map((f, i) => {
     const s = stats(f);
+    const role = !multi ? "" : i === 0
+      ? `<span class="tag">Baseline</span>`
+      : `<button type="button" class="link-btn" data-baseline="${i}">Make baseline</button>`;
+    const sites = s.siteOrder.slice(0, 6).map(esc).join(", ") + (s.siteOrder.length > 6 ? `, and ${s.siteOrder.length - 6} more` : "");
     return `<div class="file-row" style="--c:${color(f)}">
       <div class="name"><span class="dot" aria-hidden="true"></span>
         <label class="visually-hidden" for="label-${i}">Name of file ${i + 1}</label>
-        <input id="label-${i}" data-label="${i}" value="${esc(f.label)}" autocomplete="off" spellcheck="false"></div>
+        <input id="label-${i}" data-label="${i}" value="${esc(f.label)}" autocomplete="off" spellcheck="false">
+        ${role}</div>
       <div class="big num" aria-label="${fmt(s.mean)} outside domains per page on average">${fmt(s.mean)}</div>
       <div class="facts">per page on average, over <b class="num">${s.pages}</b> ${s.pages === 1 ? "page" : "pages"}. <b class="num">${s.all.size}</b> different domains in total, at most <b class="num">${s.max}</b> on one page.</div>
       <button type="button" class="icon-btn" data-remove="${i}" aria-label="Remove ${esc(f.label)}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
+      <p class="file-meta">${esc(when(f))}${f.info.browser ? ` in ${esc(f.info.browser)}` : ""}. File <span class="mono">${esc(f.fileName)}</span>.<br>Websites in visit order: ${sites}.</p>
     </div>`;
   }).join("");
 }
@@ -916,33 +1026,36 @@ function renderCompare() {
   sec.hidden = state.files.length < 2;
   if (sec.hidden) return;
   const files = state.files, S = files.map(stats);
-  const sites = new Set();
-  S.forEach(s => s.sites.forEach((_, d) => sites.add(d)));
   const two = files.length === 2;
-  const rows = [...sites].map(d => {
-    const vals = S.map(s => s.sites.has(d) ? s.sites.get(d) : null);
-    const inAll = vals.every(v => v !== null);
-    const delta = two && inAll ? vals[1] - vals[0] : null;
-    return { d, vals, inAll, delta };
-  }).sort((a, b) => (b.inAll - a.inAll) || (Math.abs(b.delta || 0) - Math.abs(a.delta || 0)) || a.d.localeCompare(b.d));
+  const sharedAll = S[0].siteOrder.filter(d => S.every(s => s.sites.has(d)));
+  const sharedSet = new Set(sharedAll);
 
-  const shared = rows.filter(r => r.inAll).length;
-  $("compare-intro").textContent = shared
-    ? `Outside domains per page for each website you visited. Websites found in every file come first, because only those can be compared fairly.${two ? " The last column shows the change from the first file to the second." : ""}`
+  const cells = (d) => S.map(s => `<td class="n">${s.sites.has(d) ? fmt(s.sites.get(d)) : '<span class="muted">not visited</span>'}</td>`).join("");
+  const span = files.length + (two ? 2 : 1);
+  let body = "";
+  if (sharedAll.length) {
+    const rows = sharedAll.map(d => ({ d, delta: two ? S[1].sites.get(d) - S[0].sites.get(d) : 0 }))
+                          .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.d.localeCompare(b.d));
+    body += `<tbody><tr class="group"><th scope="rowgroup" colspan="${span}">Compared: websites in every file</th></tr>` + rows.map(r => {
+      let change = "";
+      if (two) change = Math.abs(r.delta) < 0.05 ? '<td class="n">no change</td>'
+        : `<td class="n"><span class="delta ${r.delta > 0 ? "up" : "down"}">${signed(r.delta)}</span></td>`;
+      return `<tr><td class="site">${esc(r.d)}</td>${cells(r.d)}${change}</tr>`;
+    }).join("") + "</tbody>";
+  }
+  files.forEach((f, i) => {
+    const only = S[i].siteOrder.filter(d => !sharedSet.has(d));
+    if (!only.length) return;
+    const label = i === 0 ? `Only in ${esc(f.label)}, the baseline: not compared` : `Only in ${esc(f.label)}: noise, not compared`;
+    body += `<tbody class="unmatched"><tr class="group"><th scope="rowgroup" colspan="${span}">${label}</th></tr>` +
+      only.map(d => `<tr><td class="site">${esc(d)}</td>${cells(d)}${two ? '<td class="n muted">n/a</td>' : ""}</tr>`).join("") + "</tbody>";
+  });
+
+  $("compare-intro").innerHTML = sharedAll.length
+    ? `Outside domains per page for every website. Only websites found in every file are compared. Websites that appear in one file only are usually your noise websites; they are listed below the comparison but not counted in it.${two ? " The last column shows the change from the baseline to the other file." : ""}`
     : "The files have no website in common, so no website can be compared directly.";
-
   const head = `<tr><th scope="col">Website</th>${files.map(f => `<th scope="col" class="n">${who(f)}</th>`).join("")}${two ? '<th scope="col" class="n">Change</th>' : ""}</tr>`;
-  const body = rows.map(r => {
-    const cells = r.vals.map(v => `<td class="n">${v === null ? '<span class="muted">not visited</span>' : fmt(v)}</td>`).join("");
-    let change = "";
-    if (two) {
-      if (r.delta === null) change = '<td class="n muted">n/a</td>';
-      else if (Math.abs(r.delta) < 0.05) change = '<td class="n">no change</td>';
-      else change = `<td class="n"><span class="delta ${r.delta > 0 ? "up" : "down"}">${r.delta > 0 ? "+" : "−"}${fmt(Math.abs(r.delta))}</span></td>`;
-    }
-    return `<tr class="${r.inAll ? "" : "unmatched"}"><td class="site">${esc(r.d)}</td>${cells}${change}</tr>`;
-  }).join("");
-  $("site-table").innerHTML = `<table><caption class="visually-hidden">Outside domains per page, by website and file</caption><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  $("site-table").innerHTML = `<table><caption class="visually-hidden">Outside domains per page, by website and file</caption><thead>${head}</thead>${body}</table>`;
   renderChart();
 }
 
@@ -957,7 +1070,7 @@ function renderChart() {
   const ticks = niceTicks(maxV);
   const scale = barW / ticks[ticks.length - 1];
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="chart-title chart-desc">
-    <title id="chart-title">Average outside domains per page, all pages</title>
+    <title id="chart-title">Average outside domains per page, all pages including noise websites</title>
     <desc id="chart-desc">${files.map(x => `${esc(x.f.label)}: ${fmt(x.s.mean)}`).join(", ")}</desc>`;
   for (const t of ticks) {
     const x = labelW + t * scale;
@@ -971,7 +1084,7 @@ function renderChart() {
     svg += `<rect x="${labelW}" y="${y + 10}" width="${w}" height="${rowH - 20}" rx="6" fill="${color(x.f)}"/>`;
     svg += `<text class="value" x="${labelW + w + 8}" y="${y + rowH / 2 + 5}">${fmt(x.s.mean)}</text>`;
   });
-  $("chart").innerHTML = `<h3 style="margin-bottom:12px">Average over all pages in each file</h3>` + svg + "</svg>";
+  $("chart").innerHTML = `<h3 style="margin-bottom:4px">Average over all pages in each file</h3><p class="muted" style="margin-bottom:12px">Noise websites included, so this is not the fair comparison. Use the table above for that.</p>` + svg + "</svg>";
 }
 
 function niceTicks(max) {
@@ -982,19 +1095,27 @@ function niceTicks(max) {
   return ticks;
 }
 
-function renderOnly() {
+function chips(xs, empty) {
+  if (!xs.length) return `<p class="muted">${empty}</p>`;
+  return `<div class="chips">${xs.slice(0, 60).map(d => `<span class="chip">${esc(d)}</span>`).join("")}${xs.length > 60 ? `<span class="chip">and ${xs.length - 60} more</span>` : ""}</div>`;
+}
+
+function renderChanges() {
   const sec = $("only-section");
   sec.hidden = state.files.length < 2;
   if (sec.hidden) return;
-  const S = state.files.map(stats);
-  $("only").innerHTML = state.files.map((f, i) => {
-    const others = new Set();
-    S.forEach((s, j) => { if (j !== i) s.all.forEach((_, d) => others.add(d)); });
-    const only = [...S[i].all.keys()].filter(d => !others.has(d)).sort();
-    const chips = only.length
-      ? only.slice(0, 60).map(d => `<span class="chip">${esc(d)}</span>`).join("") + (only.length > 60 ? `<span class="chip">and ${only.length - 60} more</span>` : "")
-      : `<p class="muted">None. Every domain here also appears in another file.</p>`;
-    return `<div><h3>${who(f)}<span class="muted num" style="font-weight:400">${only.length} only here</span></h3><div class="chips">${chips}</div></div>`;
+  const base = state.files[0];
+  $("only").innerHTML = state.files.slice(1).map(f => {
+    const c = compare(base, f);
+    const head = state.files.length > 2 ? `<h3 class="pair">${who(f)} <span class="muted">compared with</span> ${who(base)}</h3>` : "";
+    const noise = c.fromNoise.length
+      ? `<details class="noise-box"><summary>${plural(c.fromNoise.length, "further domain", "further domains")} came only from the noise websites</summary>${chips(c.fromNoise, "")}</details>`
+      : "";
+    return `<div class="change-block">${head}
+      <div class="change-cols">
+        <div><h4>New: ${c.appeared.length} <span class="sub">contacted only in ${esc(f.label)}</span></h4>${chips(c.appeared, "None.")}</div>
+        <div><h4>Gone: ${c.disappeared.length} <span class="sub">contacted only in ${esc(base.label)}</span></h4>${chips(c.disappeared, "None.")}</div>
+      </div>${noise}</div>`;
   }).join("");
 }
 
@@ -1007,17 +1128,20 @@ function renderTabs() {
 
 function renderPages() {
   const f = state.files[state.active];
-  const pages = [...f.pages].sort((a, b) => b.thirdParties.size - a.thirdParties.size);
-  $("pages").innerHTML = pages.map(p => {
+  const others = state.files.filter(x => x !== f).map(stats);
+  const isNoise = (d) => others.length > 0 && state.active !== 0 && !stats(state.files[0]).sites.has(d);
+  const notCompared = (d) => others.length > 0 && others.some(s => !s.sites.has(d));
+  $("pages").innerHTML = f.pages.map(p => {
     const items = [...p.thirdParties.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
     const top = items.length ? items[0][1] : 1;
     const rows = items.map(([d, n]) => `<li><span class="d" title="${esc(d)}">${esc(d)}</span>
       <span class="track" aria-hidden="true"><span class="fill" style="width:${(n / top * 100).toFixed(1)}%"></span></span>
       <span class="n" aria-label="${n} requests">${n}</span></li>`).join("");
+    const tag = isNoise(p.domain) ? ' <span class="tag">noise website</span>' : notCompared(p.domain) ? ' <span class="tag">not compared</span>' : "";
     return `<details class="page" style="--c:${color(f)}">
       <summary>
         <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-        <span class="title"><b>${esc(p.domain)}</b><span>${esc(p.url)}</span></span>
+        <span class="title"><b>${esc(p.domain)}${tag}</b><span>${esc(p.url)}</span></span>
         <span class="stat"><b>${p.thirdParties.size}</b>outside domains</span>
         <span class="stat req"><b>${p.requests}</b>requests</span>
       </summary>
@@ -1050,15 +1174,22 @@ async function addFiles(fileList) {
 
 function addParsed(name, har) {
   const pages = analyseHar(har);
-  state.files.push({ label: name.replace(/\.har$/i, ""), pages, color: state.nextColor++ % MAX_FILE_COLORS });
+  state.files.push({ label: name.replace(/\.har$/i, ""), fileName: name, info: harInfo(har), pages,
+                     color: state.nextColor++ % MAX_FILE_COLORS });
   state.active = state.files.length - 1;
   render();
 }
 
 function downloadCsv() {
   const q = (v) => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
-  const lines = ["file_label,page_url,third_party_domains,third_party_requests"];
-  for (const f of state.files) for (const p of f.pages) lines.push([f.label, p.url, p.thirdParties.size, p.requests].map(q).join(","));
+  const S = state.files.map(stats);
+  const lines = ["file_label,is_baseline,page_url,site,compared,third_party_domains,third_party_requests"];
+  state.files.forEach((f, i) => {
+    for (const p of f.pages) {
+      const compared = S.every(s => s.sites.has(p.domain)) ? "yes" : "no";
+      lines.push([f.label, i === 0 ? "yes" : "no", p.url, p.domain, compared, p.thirdParties.size, p.requests].map(q).join(","));
+    }
+  });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
   a.download = "tracker-lens.csv";
@@ -1067,29 +1198,38 @@ function downloadCsv() {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
-/* Small built in examples so the tool can be tried without a HAR file. */
-function exampleHar(sites) {
+/* Small built in examples so the tool can be tried without a HAR file.
+   "with noise" visits the same three car sites plus two unrelated noise sites. */
+function exampleHar(sites, startIso) {
   const pages = [], entries = [];
+  let t = Date.parse(startIso);
   sites.forEach(([page, trackers], i) => {
-    const id = "page_" + (i + 1);
-    pages.push({ id, title: page, startedDateTime: new Date().toISOString() });
-    entries.push({ pageref: id, _resourceType: "document", request: { url: page }, response: { content: { mimeType: "text/html" } } });
-    for (const [host, n] of trackers) for (let k = 0; k < n; k++) entries.push({ pageref: id, request: { url: `https://${host}/r?${k}` }, response: { content: {} } });
+    const id = "page_" + (i + 1), at = new Date(t).toISOString();
+    pages.push({ id, title: page, startedDateTime: at });
+    entries.push({ pageref: id, startedDateTime: at, _resourceType: "document", request: { url: page }, response: { content: { mimeType: "text/html" } } });
+    for (const [host, n] of trackers) for (let k = 0; k < n; k++) entries.push({ pageref: id, startedDateTime: new Date(t + 1000 + k * 200).toISOString(), request: { url: `https://${host}/r?${k}` }, response: { content: {} } });
+    t += 45000;
   });
-  return { log: { version: "1.2", pages, entries } };
+  return { log: { version: "1.2", creator: { name: "Example", version: "1" }, pages, entries } };
 }
-function loadExamples() {
+const EXAMPLES = (() => {
   const ads = [["securepubads.g.doubleclick.net", 14], ["www.googletagmanager.com", 3], ["ib.adnxs.com", 6], ["fastlane.rubiconproject.com", 5], ["hbopenbid.pubmatic.com", 4], ["bidder.criteo.com", 3]];
-  addParsed("baseline", exampleHar([
-    ["https://www.example-news.com/", ads.concat([["cdn.example-news.com", 9]])],
-    ["https://weather.example.org/today", ads.slice(0, 3)],
-    ["https://www.example-shop.co.uk/", [["www.google-analytics.com", 2], ["connect.facebook.net", 2]]],
-  ]));
-  addParsed("with noise", exampleHar([
-    ["https://www.example-news.com/", ads.concat([["cdn.example-news.com", 9], ["id5-sync.com", 2], ["match.adsrvr.org", 3], ["sync.outbrain.com", 2]])],
-    ["https://weather.example.org/today", ads.concat([["ads.yieldmo.com", 2]])],
-    ["https://www.example-shop.co.uk/", [["www.google-analytics.com", 2], ["connect.facebook.net", 2], ["static.hotjar.com", 1]]],
-  ]));
+  const cars = ["https://www.example-cars.com/", ads.concat([["cdn.example-cars.com", 9]])];
+  const motors = ["https://www.example-motors.com/", [["securepubads.g.doubleclick.net", 8], ["ib.adnxs.com", 4], ["www.googletagmanager.com", 2], ["bidder.criteo.com", 2]]];
+  const blog = ["https://www.example-autoblog.com/", [["www.google-analytics.com", 2], ["connect.facebook.net", 2], ["securepubads.g.doubleclick.net", 3]]];
+  return {
+    baseline: exampleHar([cars, motors, blog], "2026-11-26T10:00:00Z"),
+    "with noise": exampleHar([
+      [cars[0], cars[1].concat([["id5-sync.com", 2], ["match.adsrvr.org", 3]])],
+      ["https://www.example-recipes.com/", [["securepubads.g.doubleclick.net", 6], ["widgets.outbrain.com", 3], ["cdn.taboola.com", 4], ["www.googletagmanager.com", 2]]],
+      [motors[0], [["securepubads.g.doubleclick.net", 8], ["ib.adnxs.com", 4], ["www.googletagmanager.com", 2]]],
+      ["https://www.example-travel.com/", [["securepubads.g.doubleclick.net", 5], ["bat.bing.com", 2], ["static.hotjar.com", 1], ["bidder.criteo.com", 2]]],
+      [blog[0], blog[1].concat([["id5-sync.com", 1]])],
+    ], "2026-11-26T10:20:00Z"),
+  };
+})();
+function loadExamples() {
+  for (const [name, har] of Object.entries(EXAMPLES)) addParsed(name + ".har", har);
 }
 
 /* ------------------------------------------------------------------
@@ -1110,7 +1250,20 @@ $("load-examples").addEventListener("click", loadExamples);
 $("download-csv").addEventListener("click", downloadCsv);
 $("clear-all").addEventListener("click", () => { state.files = []; state.nextColor = 0; render(); status("All files removed.", "done"); dz.focus(); });
 
+function onBaselineClick(e) {
+  const mb = e.target.closest("[data-baseline]");
+  if (!mb) return false;
+  const [f] = state.files.splice(+mb.dataset.baseline, 1);
+  state.files.unshift(f);
+  state.active = 0;
+  render();
+  status(`${esc(f.label)} is now the baseline. Every other file is compared with it.`, "done");
+  $("label-0").focus();
+  return true;
+}
+$("findings").addEventListener("click", onBaselineClick);
 $("files").addEventListener("click", (e) => {
+  if (onBaselineClick(e)) return;
   const b = e.target.closest("[data-remove]");
   if (!b) return;
   const [gone] = state.files.splice(+b.dataset.remove, 1);
@@ -1154,7 +1307,7 @@ if ("IntersectionObserver" in window) {
 }
 
 // Exposed for tests in the browser console.
-window.TrackerLens = { registrableDomain, domainOf, analyseHar, findings, stats };
+window.TrackerLens = { registrableDomain, domainOf, analyseHar, harInfo, findings, stats, compare };
 </script>
 </body>
 </html>
